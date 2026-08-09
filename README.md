@@ -4,6 +4,22 @@ This repository documents the complete end-to-end implementation of the **NYC Ta
 
 ---
 
+## 🚀 Project Execution
+
+The implementation roadmap for the complete project is documented here:
+
+- 📄 [Project Execution Roadmap](Project_Execution_Roadmap.md)
+
+---
+
+## 🤝 Team Collaboration
+
+The collaboration workflow, branching strategy, and contribution guidelines are documented here:
+
+- 📄 [Contributing Guide](CONTRIBUTING_GUIDE.md)
+
+---
+
 ## 📐 Phase 1 – Project Design
 📄 Architecture Guide - The complete architectural design of the project is documented here:
 
