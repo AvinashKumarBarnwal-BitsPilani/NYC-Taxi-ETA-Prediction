@@ -1,0 +1,44 @@
+# ==========================================================
+# NYC Taxi ETA Prediction
+# Machine Learning Engineering Project
+# ==========================================================
+
+# Core Data Processing
+pandas
+numpy
+pyarrow
+
+# Data Validation
+pandera
+
+# Visualization
+matplotlib
+plotly
+
+# Machine Learning
+scikit-learn
+xgboost
+lightgbm
+
+# Hyperparameter Optimization
+optuna
+
+# Experiment Tracking
+mlflow
+
+# API
+fastapi
+uvicorn
+
+# Model Serialization
+joblib
+
+# Dataset Versioning
+dvc
+
+# Monitoring
+evidently
+
+# Notebook
+jupyter
+ipykernel
