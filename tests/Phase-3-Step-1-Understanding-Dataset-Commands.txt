@@ -1,0 +1,420 @@
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> git branch
+* main
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> git origin -v
+git: 'origin' is not a git command. See 'git --help'.
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> git fetch origin
+From https://github.com/AvinashKumarBarnwal-BitsPilani/NYC-Taxi-ETA-Prediction
+ * [new branch]      feature_data_engineering_M2 -> origin/feature_data_engineering_M2
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> git switch -c feature_data_engineering_M2
+Switched to a new branch 'feature_data_engineering_M2'
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> git branch
+* feature_data_engineering_M2
+  main
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> git push -u origin feature_data_engineering_M2
+branch 'feature_data_engineering_M2' set up to track 'origin/feature_data_engineering_M2'.
+Everything up-to-date
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> Get-ChildItem data\raw
+
+
+    Directory: D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction\data\raw
+
+
+Mode                 LastWriteTime         Length Name                                                                                      
+----                 -------------         ------ ----                                                                                      
+-a----        07-08-2026     21:18        8751893 sample_submission.csv                                                                     
+-a----        07-08-2026     21:18       70794289 test.csv                                                                                  
+-a----        07-08-2026     21:18      200589097 train.csv                                                                                 
+
+
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> Get-ChildItem data\raw | Select-Object Name, Length
+
+Name                     Length
+----                     ------
+sample_submission.csv   8751893
+test.csv               70794289
+train.csv             200589097
+
+
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; df=pd.read_csv('data/raw/train.csv', nrows=5); print(df.columns.tolist()); print(df.head().to_string())"
+['id', 'vendor_id', 'pickup_datetime', 'dropoff_datetime', 'passenger_count', 'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'store_and_fwd_flag', 'trip_duration']
+          id  vendor_id      pickup_datetime     dropoff_datetime  passenger_count  pickup_longitude  pickup_latitude  dropoff_longitude  dropoff_latitude store_and_fwd_flag  trip_duration
+0  id2875421          2  2016-03-14 17:24:55  2016-03-14 17:32:30                1        -73.982155        40.767937         -73.964630         40.765602                  N            455
+1  id2377394          1  2016-06-12 00:43:35  2016-06-12 00:54:38                1        -73.980415        40.738564         -73.999481         40.731152                  N            663
+2  id3858529          2  2016-01-19 11:35:24  2016-01-19 12:10:48                1        -73.979027        40.763939         -74.005333         40.710087                  N           2124
+3  id3504673          2  2016-04-06 19:32:31  2016-04-06 19:39:40                1        -74.010040        40.719971         -74.012268         40.706718                  N            429
+4  id2181028          2  2016-03-26 13:30:55  2016-03-26 13:38:10                1        -73.973053        40.793209         -73.972923         40.782520                  N            435
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; df=pd.read_csv('data/raw/train.csv', nrows=5); print(df.dtypes)"
+id                     object
+vendor_id               int64
+pickup_datetime        object
+dropoff_datetime       object
+passenger_count         int64
+pickup_longitude      float64
+pickup_latitude       float64
+dropoff_longitude     float64
+dropoff_latitude      float64
+store_and_fwd_flag     object
+trip_duration           int64
+dtype: object
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; df=pd.read_csv('data/raw/train.csv', nrows=100000); print(df.isnull().sum().sort_values(ascending=False))"
+id                    0
+vendor_id             0
+pickup_datetime       0
+dropoff_datetime      0
+passenger_count       0
+pickup_longitude      0
+pickup_latitude       0
+dropoff_longitude     0
+dropoff_latitude      0
+store_and_fwd_flag    0
+trip_duration         0
+dtype: int64
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; df=pd.read_csv('data/raw/train.csv', nrows=100000); print(df.describe(include='all').T.to_string())"
+                       count  unique                  top   freq       mean          std        min        25%        50%        75%        max
+id                    100000  100000            id2875421      1        NaN          NaN        NaN        NaN        NaN        NaN        NaN
+vendor_id           100000.0     NaN                  NaN    NaN    1.53349      0.49888        1.0        1.0        2.0        2.0        2.0
+pickup_datetime       100000   99590  2016-03-31 21:10:27      3        NaN          NaN        NaN        NaN        NaN        NaN        NaN
+dropoff_datetime      100000   99625  2016-06-08 07:34:30      2        NaN          NaN        NaN        NaN        NaN        NaN        NaN
+passenger_count     100000.0     NaN                  NaN    NaN    1.66781     1.317603        0.0        1.0        1.0        2.0        6.0
+pickup_longitude    100000.0     NaN                  NaN    NaN -73.973464     0.038294 -74.533875 -73.991852 -73.981712 -73.967209 -73.334023
+pickup_latitude     100000.0     NaN                  NaN    NaN  40.751059     0.028152  40.433842   40.73737  40.754269  40.768426  41.319164
+dropoff_longitude   100000.0     NaN                  NaN    NaN -73.973455     0.036625 -74.562355 -73.991394 -73.979782 -73.962919 -72.711395
+dropoff_latitude    100000.0     NaN                  NaN    NaN  40.751947     0.032452  40.441662  40.735844  40.754478  40.769928   41.31152
+store_and_fwd_flag    100000       2                    N  99416        NaN          NaN        NaN        NaN        NaN        NaN        NaN
+trip_duration       100000.0     NaN                  NaN    NaN  939.86426  3004.541199        1.0      396.0      662.0     1076.0    86390.0
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; df=pd.read_csv('data/raw/train.csv', nrows=100000); print(df.nunique().sort_values())"
+vendor_id                  2
+store_and_fwd_flag         2
+passenger_count            7
+trip_duration           4046
+pickup_longitude       12656
+dropoff_longitude      15490
+pickup_latitude        25839
+dropoff_latitude       30239
+pickup_datetime        99590
+dropoff_datetime       99625
+id                    100000
+dtype: int64
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; df=pd.read_csv('data/raw/train.csv', nrows=100000); print(df.columns.tolist())"
+['id', 'vendor_id', 'pickup_datetime', 'dropoff_datetime', 'passenger_count', 'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'store_and_fwd_flag', 'trip_duration']
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; df=pd.read_csv('data/raw/train.csv', nrows=100000); print(df['trip_duration'].describe()); print(df['trip_duration'].sort_values().head(20).to_string(index=False)); print(df['trip_duration'].sort_values(ascending=False).head(20).to_string(index=False))"
+count    100000.000000
+mean        939.864260
+std        3004.541199
+min           1.000000
+25%         396.000000
+50%         662.000000
+75%        1076.000000
+max       86390.000000
+Name: trip_duration, dtype: float64
+1
+2
+2
+2
+2
+2
+2
+2
+2
+2
+3
+3
+3
+3
+3
+3
+3
+3
+3
+3
+86390
+86387
+86378
+86377
+86358
+86357
+86354
+86352
+86352
+86351
+86346
+86345
+86344
+86343
+86339
+86329
+86327
+86318
+86315
+86315
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; train=pd.read_csv('data/raw/train.csv'); test=pd.read_csv('data/raw/test.csv'); sample=pd.read_csv('data/raw/sample_submission.csv'); print('Train:', len(train)); print('Test:', len(test)); print('Sample submission:', len(sample))"
+Train: 1458644
+Test: 625134
+Sample submission: 625134
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; train=pd.read_csv('data/raw/train.csv', nrows=5); test=pd.read_csv('data/raw/test.csv', nrows=5); print('TRAIN columns:'); print(train.columns.tolist()); print('\nTEST columns:'); print(test.columns.tolist()); print('\nOnly in TRAIN:', sorted(set(train.columns)-set(test.columns))); print('Only in TEST:', sorted(set(test.columns)-set(train.columns)))"
+TRAIN columns:
+['id', 'vendor_id', 'pickup_datetime', 'dropoff_datetime', 'passenger_count', 'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'store_and_fwd_flag', 'trip_duration']
+
+TEST columns:
+['id', 'vendor_id', 'pickup_datetime', 'passenger_count', 'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'store_and_fwd_flag']
+
+Only in TRAIN: ['dropoff_datetime', 'trip_duration']
+Only in TEST: []
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; train=pd.read_csv('data/raw/train.csv'); test=pd.read_csv('data/raw/test.csv'); print('TRAIN missing values:'); print(train.isnull().sum()); print('\nTEST missing values:'); print(test.isnull().sum())"
+TRAIN missing values:
+id                    0
+vendor_id             0
+pickup_datetime       0
+dropoff_datetime      0
+passenger_count       0
+pickup_longitude      0
+pickup_latitude       0
+dropoff_longitude     0
+dropoff_latitude      0
+store_and_fwd_flag    0
+trip_duration         0
+dtype: int64
+
+TEST missing values:
+id                    0
+vendor_id             0
+pickup_datetime       0
+passenger_count       0
+pickup_longitude      0
+pickup_latitude       0
+dropoff_longitude     0
+dropoff_latitude      0
+store_and_fwd_flag    0
+dtype: int64
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; train=pd.read_csv('data/raw/train.csv'); print(train['trip_duration'].describe()); print('\nSmallest values:'); print(train['trip_duration'].nsmallest(20).to_string(index=False)); print('\nLargest values:'); print(train['trip_duration'].nlargest(20).to_string(index=False))"
+count    1.458644e+06
+mean     9.594923e+02
+std      5.237432e+03
+min      1.000000e+00
+25%      3.970000e+02
+50%      6.620000e+02
+75%      1.075000e+03
+max      3.526282e+06
+Name: trip_duration, dtype: float64
+
+Smallest values:
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+
+Largest values:
+3526282
+2227612
+2049578
+1939736
+  86392
+  86391
+  86390
+  86387
+  86385
+  86379
+  86378
+  86378
+  86377
+  86377
+  86369
+  86369
+  86369
+  86369
+  86367
+  86367
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; train=pd.read_csv('data/raw/train.csv', parse_dates=['pickup_datetime','dropoff_datetime']); print('Pickup range:', train['pickup_datetime'].min(), 'to', train['pickup_datetime'].max()); print('Dropoff range:', train['dropoff_datetime'].min(), 'to', train['dropoff_datetime'].max()); print('Duration consistency violations:', (train['dropoff_datetime'] < train['pickup_datetime']).sum())"
+Pickup range: 2016-01-01 00:00:17 to 2016-06-30 23:59:39
+Dropoff range: 2016-01-01 00:03:31 to 2016-07-01 23:02:03
+Duration consistency violations: 0
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> cd .\scripts\
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction\scripts> python scripts/create_dev_sample.py
+C:\Users\Avinash Kr Barnwal\AppData\Local\Programs\Python\Python312\python.exe: can't open file 'D:\\Bits-AI-ML\\3-ML Engineering\\Mini-Project\\NYC-Taxi-ETA-Prediction\\scripts\\scripts\\create_dev_sample.py': [Errno 2] No such file or directory
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction\scripts> ls
+
+
+    Directory: D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction\scripts
+
+
+Mode                 LastWriteTime         Length Name                                                                                                                                      
+----                 -------------         ------ ----                                                                                                                                      
+-a----        14-08-2026     13:29           1775 create_dev_sample.py                                                                                                                      
+
+
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction\scripts> python create_dev_sample.py        
+Traceback (most recent call last):
+  File "D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction\scripts\create_dev_sample.py", line 16, in <module>
+    raise FileNotFoundError(f"Input file not found: {RAW_FILE}")
+FileNotFoundError: Input file not found: data\raw\train.csv
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction\scripts> cd ..
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python scripts/create_dev_sample.py
+Loading training dataset...
+Full training dataset: 1,458,644 rows
+
+Development dataset created successfully.
+Sampling fraction : 10%
+Random state      : 42
+Sample rows       : 145,864
+Output file       : data\interim\train_sample_10pct.csv
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; full=pd.read_csv('data/raw/train.csv', nrows=0); dev=pd.read_csv('data/interim/train_sample_10pct.csv'); full_rows=1458644; print('Full training rows :', f'{full_rows:,}'); print('Development rows   :', f'{len(dev):,}'); print('Expected 10% rows  :', f'{int(full_rows*0.10):,}'); print('Row count match    :', len(dev)==int(full_rows*0.10)); print('\nSchema match       :', list(full.columns)==list(dev.columns)); print('Full columns       :', full.columns.tolist()); print('Dev columns        :', dev.columns.tolist())"
+Full training rows : 1,458,644
+Development rows   : 145,864
+Expected 10% rows  : 145,864
+Row count match    : True
+
+Schema match       : True
+Full columns       : ['id', 'vendor_id', 'pickup_datetime', 'dropoff_datetime', 'passenger_count', 'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'store_and_fwd_flag', 'trip_duration']
+Dev columns        : ['id', 'vendor_id', 'pickup_datetime', 'dropoff_datetime', 'passenger_count', 'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'store_and_fwd_flag', 'trip_duration']
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; full=pd.read_csv('data/raw/train.csv', usecols=['id']); dev=pd.read_csv('data/interim/train_sample_10pct.csv', usecols=['id']); print('Development duplicate IDs :', dev['id'].duplicated().sum()); print('Full training unique IDs  :', full['id'].nunique()); print('Development unique IDs    :', dev['id'].nunique()); print('IDs found in full train   :', dev['id'].isin(full['id']).sum()); print('IDs NOT found             :', (~dev['id'].isin(full['id'])).sum())"
+Development duplicate IDs : 0
+Full training unique IDs  : 1458644
+Development unique IDs    : 145864
+IDs found in full train   : 145864
+IDs NOT found             : 0
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; full=pd.read_csv('data/raw/train.csv', usecols=['trip_duration']); dev=pd.read_csv('data/interim/train_sample_10pct.csv', usecols=['trip_duration']); print('FULL TRAINING DATASET'); print(full['trip_duration'].describe()); print('\n10% DEVELOPMENT DATASET'); print(dev['trip_duration'].describe()); print('\nMEAN DIFFERENCE (%) :', round(abs(full['trip_duration'].mean()-dev['trip_duration'].mean())/full['trip_duration'].mean()*100,2)); print('MEDIAN DIFFERENCE (%) :', round(abs(full['trip_duration'].median()-dev['trip_duration'].median())/full['trip_duration'].median()*100,2))"
+FULL TRAINING DATASET
+count    1.458644e+06
+mean     9.594923e+02
+std      5.237432e+03
+min      1.000000e+00
+25%      3.970000e+02
+50%      6.620000e+02
+75%      1.075000e+03
+max      3.526282e+06
+Name: trip_duration, dtype: float64
+
+10% DEVELOPMENT DATASET
+count    145864.000000
+mean        964.340070
+std        3305.376209
+min           1.000000
+25%         397.000000
+50%         662.000000
+75%        1078.000000
+max       86366.000000
+Name: trip_duration, dtype: float64
+
+MEAN DIFFERENCE (%) : 0.51
+MEDIAN DIFFERENCE (%) : 0.0
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; full=pd.read_csv('data/raw/train.csv', usecols=['vendor_id','passenger_count','store_and_fwd_flag']); dev=pd.read_csv('data/interim/train_sample_10pct.csv', usecols=['vendor_id','passenger_count','store_and_fwd_flag']); print('=== VENDOR_ID (%) ==='); print(pd.concat([full['vendor_id'].value_counts(normalize=True).sort_index().rename('Full'), dev['vendor_id'].value_counts(normalize=True).sort_index().rename('Dev')],axis=1).mul(100).round(2)); print('\n=== PASSENGER_COUNT (%) ==='); print(pd.concat([full['passenger_count'].value_counts(normalize=True).sort_index().rename('Full'), dev['passenger_count'].value_counts(normalize=True).sort_index().rename('Dev')],axis=1).mul(100).round(2)); print('\n=== STORE_AND_FWD_FLAG (%) ==='); print(pd.concat([full['store_and_fwd_flag'].value_counts(normalize=True).sort_index().rename('Full'), dev['store_and_fwd_flag'].value_counts(normalize=True).sort_index().rename('Dev')],axis=1).mul(100).round(2))"
+=== VENDOR_ID (%) ===
+           Full    Dev
+vendor_id             
+1          46.5  46.44
+2          53.5  53.56
+
+=== PASSENGER_COUNT (%) ===
+                  Full    Dev
+passenger_count              
+0                 0.00   0.00
+1                70.86  70.70
+2                14.42  14.48
+3                 4.11   4.15
+4                 1.95   1.97
+5                 5.35   5.37
+6                 3.31   3.34
+7                 0.00    NaN
+8                 0.00    NaN
+9                 0.00    NaN
+
+=== STORE_AND_FWD_FLAG (%) ===
+                     Full    Dev
+store_and_fwd_flag              
+N                   99.45  99.46
+Y                    0.55   0.54
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; full=pd.read_csv('data/raw/train.csv', usecols=['pickup_datetime'], parse_dates=['pickup_datetime']); dev=pd.read_csv('data/interim/train_sample_10pct.csv', usecols=['pickup_datetime'], parse_dates=['pickup_datetime']); full['month']=full['pickup_datetime'].dt.month; dev['month']=dev['pickup_datetime'].dt.month; full['hour']=full['pickup_datetime'].dt.hour; dev['hour']=dev['pickup_datetime'].dt.hour; full['day_of_week']=full['pickup_datetime'].dt.day_name(); dev['day_of_week']=dev['pickup_datetime'].dt.day_name(); print('=== MONTH (%) ==='); print(pd.concat([full['month'].value_counts(normalize=True).sort_index().rename('Full'), dev['month'].value_counts(normalize=True).sort_index().rename('Dev')],axis=1).mul(100).round(2)); print('\n=== HOUR (%) ==='); print(pd.concat([full['hour'].value_counts(normalize=True).sort_index().rename('Full'), dev['hour'].value_counts(normalize=True).sort_index().rename('Dev')],axis=1).mul(100).round(2)); print('\n=== DAY OF WEEK (%) ==='); order=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']; print(pd.concat([full['day_of_week'].value_counts(normalize=True).reindex(order).rename('Full'), dev['day_of_week'].value_counts(normalize=True).reindex(order).rename('Dev')],axis=1).mul(100).round(2))"
+=== MONTH (%) ===
+        Full    Dev
+month              
+1      15.75  15.59
+2      16.34  16.49
+3      17.56  17.60
+4      17.25  17.25
+5      17.04  17.04
+6      16.06  16.03
+
+=== HOUR (%) ===
+      Full   Dev
+hour            
+0     3.65  3.53
+1     2.64  2.65
+2     1.92  1.91
+3     1.43  1.48
+4     1.08  1.09
+5     1.03  1.05
+6     2.28  2.24
+7     3.81  3.86
+8     4.60  4.61
+9     4.64  4.70
+10    4.49  4.45
+11    4.69  4.77
+12    4.93  4.92
+13    4.90  4.88
+14    5.09  5.09
+15    4.92  4.94
+16    4.41  4.49
+17    5.24  5.26
+18    6.21  6.11
+19    6.19  6.14
+20    5.76  5.73
+21    5.77  5.71
+22    5.52  5.52
+23    4.78  4.84
+
+=== DAY OF WEEK (%) ===
+              Full    Dev
+day_of_week              
+Monday       12.85  12.81
+Tuesday      13.90  13.87
+Wednesday    14.41  14.43
+Thursday     14.98  15.01
+Friday       15.32  15.34
+Saturday     15.14  15.16
+Sunday       13.39  13.38
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> 
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction> python -c "import pandas as pd; cols=['pickup_longitude','pickup_latitude','dropoff_longitude','dropoff_latitude']; full=pd.read_csv('data/raw/train.csv',usecols=cols); dev=pd.read_csv('data/interim/train_sample_10pct.csv',usecols=cols); print('=== FULL TRAINING ==='); print(full.describe().T[['min','25%','50%','75%','max']].round(6)); print('\n=== 10% DEVELOPMENT ==='); print(dev.describe().T[['min','25%','50%','75%','max']].round(6))"
+=== FULL TRAINING ===
+                          min        25%        50%        75%        max
+pickup_longitude  -121.933342 -73.991867 -73.981743 -73.967331 -61.335529
+pickup_latitude     34.359695  40.737347  40.754101  40.768360  51.881084
+dropoff_longitude -121.933304 -73.991325 -73.979752 -73.963013 -61.335529
+dropoff_latitude    32.181141  40.735885  40.754524  40.769810  43.921028
+
+=== 10% DEVELOPMENT ===
+                         min        25%        50%        75%        max
+pickup_longitude  -77.896019 -73.991890 -73.981712 -73.967239 -72.074333
+pickup_latitude    35.310307  40.737323  40.754089  40.768430  41.107208
+dropoff_longitude -79.817978 -73.991341 -73.979752 -73.962967 -72.022408
+dropoff_latitude   35.173546  40.735821  40.754482  40.769875  41.201595
+(.venv) PS D:\Bits-AI-ML\3-ML Engineering\Mini-Project\NYC-Taxi-ETA-Prediction>

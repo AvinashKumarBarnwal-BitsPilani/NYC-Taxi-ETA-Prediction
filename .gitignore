@@ -66,6 +66,9 @@ mlflow.db
 # ----------------------------------------------------------
 # Raw datasets (managed by DVC)
 data/raw/
+data/interim/
+data/processed/
+data/split/
 
 # Large archives
 *.zip

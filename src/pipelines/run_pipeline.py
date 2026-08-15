@@ -1,0 +1,269 @@
+"""End-to-end data engineering pipeline for the NYC Taxi project.
+
+This module orchestrates the reusable production components created during
+Step 7.1 without duplicating their internal business logic.
+
+Pipeline:
+1. Pre-clean data-contract validation (diagnostic)
+2. Data cleaning
+3. Post-clean data-contract validation (mandatory gate)
+4. Feature engineering
+5. Chronological train/validation split
+6. TRAIN-only preprocessing
+7. Processed dataset verification and persistence
+
+Created using the reusable production modules:
+- src/validation/validate_contract.py
+- src/ingestion/cleaning.py
+- src/features/feature_engineering.py
+- src/pipelines/train_validation_split.py
+- src/pipelines/preprocessing.py
+
+Run from the project root:
+    python -m src.pipelines.run_pipeline
+"""
+
+#from src.features.feature_engineering import engineer_train_test
+from src.features.feature_engineering import engineer_features
+
+#from src.ingestion.cleaning import clean_raw_data
+
+from src.ingestion.cleaning import (
+    clean_raw_data,
+    log_summary,
+)
+from src.pipelines.preprocessing import (
+    preprocess_train_validation,
+    save_processed_datasets,
+    verify_preprocessed_datasets,
+)
+from src.pipelines.train_validation_split import (
+    save_split_datasets,
+    split_train_validation,
+)
+from src.utils.logger import get_logger
+from src.validation.validate_contract import (
+    CONTRACT_PATH,
+    load_contract,
+    log_validation_report,
+    validate_datasets,
+    validate_raw_data,
+)
+
+
+logger = get_logger(__name__)
+
+
+def validate_before_cleaning() -> None:
+    """Run contract validation on raw data as a diagnostic pre-cleaning check.
+
+    Raw data may contain violations that are intentionally handled by the
+    cleaning stage. Therefore, failures here are logged but do not stop the
+    pipeline.
+    """
+    logger.info("PRE-CLEAN VALIDATION STARTED")
+
+    results_df = validate_raw_data()
+    passed = log_validation_report(results_df)
+
+    if passed:
+        logger.info(
+            "PRE-CLEAN VALIDATION PASSED - no raw contract violations detected"
+        )
+    else:
+        failed = int((results_df["status"] == "FAIL").sum())
+        logger.warning(
+            "PRE-CLEAN VALIDATION FOUND %d violation(s) - "
+            "continuing because cleaning is designed to handle raw-data "
+            "quality violations",
+            failed,
+        )
+
+    logger.info("PRE-CLEAN VALIDATION COMPLETED")
+
+
+def validate_after_cleaning(
+    train_clean,
+    test_clean,
+) -> None:
+    """Run the mandatory contract validation gate on cleaned data."""
+    logger.info("POST-CLEAN VALIDATION STARTED")
+
+    contract = load_contract(CONTRACT_PATH)
+
+    results_df = validate_datasets(
+        train_clean,
+        test_clean,
+        contract,
+    )
+
+    passed = log_validation_report(results_df)
+
+    if not passed:
+        logger.error("POST-CLEAN VALIDATION FAILED - stopping pipeline")
+        raise ValueError(
+            "Post-clean data-contract validation failed."
+        )
+
+    logger.info(
+        "POST-CLEAN VALIDATION PASSED - cleaned datasets satisfy "
+        "the implemented data contract"
+    )
+    logger.info("POST-CLEAN VALIDATION COMPLETED")
+
+
+def run_pipeline() -> None:
+    """Execute the complete Phase 3 data engineering workflow."""
+    logger.info("=" * 70)
+    logger.info("PHASE 3 - END-TO-END DATA ENGINEERING PIPELINE STARTED")
+    logger.info("=" * 70)
+
+    try:
+        # ------------------------------------------------------------------
+        # 1. Pre-clean validation
+        # ------------------------------------------------------------------
+        validate_before_cleaning()
+
+        # ------------------------------------------------------------------
+        # 2. Cleaning
+        # ------------------------------------------------------------------
+        logger.info("DATA CLEANING STARTED")
+
+        (
+            train_clean,
+            test_clean,
+            train_audit,
+            test_audit,
+        ) = clean_raw_data()
+
+        logger.info(
+            "DATA CLEANING COMPLETED - TRAIN=%d, TEST=%d",
+            len(train_clean),
+            len(test_clean),
+        )
+
+        # logger.info(
+        #     "Cleaning audit - TRAIN removed=%d, TEST removed=%d",
+        #     train_audit["total_removed"],
+        #     test_audit["total_removed"],
+        # )
+
+        log_summary("TRAIN", train_audit)
+        log_summary("TEST", test_audit)
+
+        # ------------------------------------------------------------------
+        # 3. Post-clean validation gate
+        # ------------------------------------------------------------------
+        validate_after_cleaning(
+            train_clean,
+            test_clean,
+        )
+
+        # ------------------------------------------------------------------
+        # 4. Feature engineering
+        # ------------------------------------------------------------------
+        
+        # logger.info("FEATURE ENGINEERING STARTED")
+
+        # train_engineered, test_engineered = engineer_train_test(
+        #     train_clean,
+        #     test_clean,
+        # )
+
+        # logger.info(
+        #     "FEATURE ENGINEERING COMPLETED - TRAIN=%s, TEST=%s",
+        #     train_engineered.shape,
+        #     test_engineered.shape,
+        # )
+
+        logger.info("FEATURE ENGINEERING STARTED")
+
+        train_engineered = engineer_features(train_clean)
+
+        logger.info(
+        "FEATURE ENGINEERING COMPLETED - TRAIN=%s",
+        train_engineered.shape,
+    )
+
+        # ------------------------------------------------------------------
+        # 5. Chronological train/validation split
+        # ------------------------------------------------------------------
+        logger.info("TRAIN / VALIDATION SPLIT STARTED")
+
+        (
+            X_train,
+            X_val,
+            y_train,
+            y_val,
+        ) = split_train_validation(train_engineered)
+
+        save_split_datasets(
+            X_train,
+            X_val,
+            y_train,
+            y_val,
+        )
+
+        logger.info(
+            "TRAIN / VALIDATION SPLIT COMPLETED - "
+            "X_train=%s, X_val=%s, y_train=%s, y_val=%s",
+            X_train.shape,
+            X_val.shape,
+            y_train.shape,
+            y_val.shape,
+        )
+
+        # ------------------------------------------------------------------
+        # 6. Preprocessing
+        # ------------------------------------------------------------------
+        logger.info("PREPROCESSING STARTED")
+
+        (
+            X_train_processed,
+            X_val_processed,
+            _preprocessor,
+        ) = preprocess_train_validation(
+            X_train,
+            X_val,
+        )
+
+        # ------------------------------------------------------------------
+        # 7. Processed dataset verification and persistence
+        # ------------------------------------------------------------------
+        verify_preprocessed_datasets(
+            X_train_processed,
+            X_val_processed,
+        )
+
+        save_processed_datasets(
+            X_train_processed,
+            X_val_processed,
+        )
+
+        logger.info(
+            "PREPROCESSING COMPLETED - "
+            "X_train=%s, X_val=%s",
+            X_train_processed.shape,
+            X_val_processed.shape,
+        )
+
+        logger.info("=" * 70)
+        logger.info(
+            "PHASE 3 - END-TO-END DATA ENGINEERING PIPELINE COMPLETED"
+        )
+        logger.info("=" * 70)
+
+    except Exception:
+        logger.exception(
+            "PHASE 3 - END-TO-END DATA ENGINEERING PIPELINE FAILED"
+        )
+        raise
+
+
+def main() -> None:
+    """Standalone entry point."""
+    run_pipeline()
+
+
+if __name__ == "__main__":
+    main()

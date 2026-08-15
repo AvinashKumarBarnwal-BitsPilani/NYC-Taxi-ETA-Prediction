@@ -1,0 +1,25 @@
+# Summary of the completed feature engineering workflow.
+# This script prints the final candidate feature set and the decisions
+# that led to it.
+
+print("=== Step 5.9 – Feature Engineering Summary ===")
+print("Final candidate features:")
+print("- vendor_id")
+print("- passenger_count")
+print("- store_and_fwd_flag")
+print("- pickup_hour")
+print("- pickup_day_of_week")
+print("- pickup_month")
+print("- is_weekend")
+print("- distance_km")
+print()
+print("Excluded features:")
+print("- id")
+print("- dropoff_datetime")
+print("- trip_duration")
+print("- pickup_year")
+print("- pickup_day")
+print("- rush_hour")
+print()
+print("Status: Step 5 complete.")
+print("Next: Step 6 – Train / Validation Split & Preprocessing")
