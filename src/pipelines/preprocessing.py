@@ -23,6 +23,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from src.utils.logger import get_logger
 
+import joblib
 
 logger = get_logger(__name__)
 
@@ -53,6 +54,31 @@ CATEGORICAL_FEATURES = [
     "store_and_fwd_flag",
 ]
 
+# ---------------------------------------------------------------------------
+# Save Preprocessor
+# ---------------------------------------------------------------------------
+def save_preprocessor(
+    preprocessor: ColumnTransformer,
+    output_dir: Path = PROCESSED_DIR,
+) -> None:
+    """Save the fitted TRAIN preprocessor for reuse during inference."""
+
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    preprocessor_path = output_dir / "preprocessor.joblib"
+
+    joblib.dump(
+        preprocessor,
+        preprocessor_path,
+    )
+
+    logger.info(
+        "Fitted preprocessor saved: %s",
+        preprocessor_path,
+    )
 
 # ---------------------------------------------------------------------------
 # Preprocessor construction

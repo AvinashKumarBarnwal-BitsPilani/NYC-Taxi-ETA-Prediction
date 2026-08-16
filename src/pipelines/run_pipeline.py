@@ -35,6 +35,7 @@ from src.ingestion.cleaning import (
 from src.pipelines.preprocessing import (
     preprocess_train_validation,
     save_processed_datasets,
+    save_preprocessor,
     verify_preprocessed_datasets,
 )
 from src.pipelines.train_validation_split import (
@@ -259,7 +260,7 @@ def run_pipeline() -> None:
         (
             X_train_processed,
             X_val_processed,
-            _preprocessor,
+            preprocessor,
         ) = preprocess_train_validation(
             X_train,
             X_val,
@@ -277,6 +278,8 @@ def run_pipeline() -> None:
             X_train_processed,
             X_val_processed,
         )
+
+        save_preprocessor(preprocessor)
 
         logger.info(
             "PREPROCESSING COMPLETED - "

@@ -17,8 +17,8 @@ stages:
       size: 200589097
     - path: src
       hash: md5
-      md5: 16f149d2ceddcf0018998f1616cf0afb.dir
-      size: 114859
+      md5: 90bad54fd8527dd53e7164b869a89279.dir
+      size: 116236
       nfiles: 14
     params:
       params.yaml:
@@ -31,9 +31,9 @@ stages:
       nfiles: 2
     - path: data/processed
       hash: md5
-      md5: 1582788cdae5f5ad8cc99c2b4605717d.dir
-      size: 53855193
-      nfiles: 2
+      md5: c8ee337714d0bb2072a9005ab488fb77.dir
+      size: 53857898
+      nfiles: 3
     - path: data/split
       hash: md5
       md5: 069158904d54cca547820c407f080728.dir
