@@ -11,6 +11,8 @@ Phase 3C – Feature Engineering & ML-Ready Pipeline
     │
     ├── Step 8 – Build the DVC Pipeline
     │
+    ├── Step 8 – Build the DVC Pipeline
+    │
     ├── Step 9 – Testing & Reproducibility
     │
     └── Step 10 – Phase 3 Integration & Handover
@@ -40,9 +42,13 @@ Phase 3C – Feature Engineering & ML-Ready Pipeline
 
 - [Step 7 - Build the Data Engineering Code Pipeline](#step-7--build-the-data-engineering-code-pipeline)
   - [7.1 Design Modular Pipeline Architecture](#step-71--design-modular-pipeline-architecture)
-  - [7.2 Implement End-to-End Pipeline](#72--implement-end-to-end-pipeline)
-  - [7.3 Pipeline Testing & Validation](#73--pipeline-testing--validation)
-  - [7.4 Pipeline Reproducibility](#74--pipeline-reproducibility)
+  - [7.2 Implement End-to-End Pipeline](#step-72--implement-end-to-end-pipeline)
+  - [7.3 Pipeline Testing & Validation](#step-73--pipeline-testing--validation)
+    - [7.3a Setup Automated Testing with pytest](#step-73a--setup-automated-testing-with-pytest)
+    - [7.3b Test Production Modules](#step-73b--test-production-modules)
+    - [7.3c Test Data & Pipeline Invariants](#step-73c--test-data--pipeline-invariants)
+    - [7.3d Test Preprocessing & Leakage Controls](#step-73d--test-preprocessing--leakage-controls)
+    - [7.3e End-to-End Pipeline Test](#step-73e--end-to-end-pipeline-test)
 
 - [Step 8 - Build the DVC Pipeline](#step-8--build-the-dvc-pipeline)
   - [8.1 DVC Pipeline Configuration](#81--dvc-pipeline-configuration)
@@ -2623,185 +2629,1045 @@ The next major task is to move this experimentation logic into a **reusable prod
 
 ### Objective
 
-Define how the reusable Phase 3 data engineering logic will be organized into the existing `src/` structure.
+Define how the finalized Phase 3 data engineering logic will be organized into the existing `src/` structure.
 
 The goal is to separate **learning/analysis scripts** from **reusable production logic** without unnecessarily restructuring the project.
+
+The architecture is designed so that the finalized components can later be connected into an end-to-end pipeline in Step 7.2.
 
 ---
 
 ### Project Philosophy
 
-```
-scripts/
-    ↓
-Learning + Exploration + Historical Evidence
+The project follows a clear separation of responsibilities:
 
-src/
-    ↓
-Reusable Production Logic
-
-tests/
-    ↓
-Automated Verification
-
-pipelines/
-    ↓
-Connect the reusable components
-
-DVC
-    ↓
-Reproduce the complete workflow
+```text
+scripts/    → Learning + Exploration + Historical Evidence
+src/        → Reusable Production Logic
+tests/      → Automated Verification
+pipelines/  → Connect the reusable components
+DVC         → Reproduce the complete workflow
 ```
 
-Existing scripts under `scripts/` will **not be moved or deleted**.
+Existing scripts under `scripts/` will not be moved, deleted, or replaced.
 
-Instead, finalized logic will be recreated as clean, reusable modules under `src/`.
+Instead, finalized logic from the relevant scripts will be recreated/refactored as clean, reusable production modules under `src/`.
 
----
+This preserves the original scripts as learning artifacts, historical evidence, and implementation references, while `src/` becomes the reusable production layer.
 
 ### Proposed Modular Architecture
 
-```
+```text
 src/
-│
 ├── ingestion/
 │   └── cleaning.py
-│
 ├── validation/
 │   └── validate_contract.py
-│
 ├── features/
 │   └── feature_engineering.py
-│
 ├── pipelines/
 │   ├── train_validation_split.py
 │   └── preprocessing.py
-│
 ├── training/
-│
 ├── inference/
-│
 ├── monitoring/
-│
 ├── api/
-│
 └── utils/
+    └── logger.py
 ```
 
----
+The `training/`, `inference/`, `monitoring/`, and `api/` directories are reserved for later phases and are not implemented as part of Step 7.1.
+
+### Production Modules Created
+
+The following reusable modules have now been created and individually verified.
+
+| Production Module | Responsibility | Status |
+|---|---|---|
+| `src/utils/logger.py` | Centralized logging for production modules | ✅ Verified |
+| `src/ingestion/cleaning.py` | Load and clean raw TRAIN/TEST data | ✅ Verified |
+| `src/validation/validate_contract.py` | Validate datasets against the data contract | ✅ Verified |
+| `src/features/feature_engineering.py` | Create finalized datetime and geographic features | ✅ Verified |
+| `src/pipelines/train_validation_split.py` | Create chronological TRAIN/VALIDATION split | ✅ Verified |
+| `src/pipelines/preprocessing.py` | Scale and encode ML features | ✅ Verified |
 
 ### Module Responsibilities
 
 | Module | Responsibility |
 |---|---|
-| `src/ingestion/cleaning.py` | Load and clean raw data |
-| `src/validation/validate_contract.py` | Validate data against the data contract |
-| `src/features/feature_engineering.py` | Create finalized ML features |
-| `src/pipelines/train_validation_split.py` | Create the chronological train/validation split |
-| `src/pipelines/preprocessing.py` | Encode categorical features and scale required numerical features |
-| `tests/` | Automatically verify the reusable modules |
+| `src/utils/logger.py` | Provide centralized logging for reusable production modules |
+| `src/ingestion/cleaning.py` | Load raw data and perform finalized data-cleaning operations |
+| `src/validation/validate_contract.py` | Validate datasets against the project data contract |
+| `src/features/feature_engineering.py` | Create finalized datetime and geographic features |
+| `src/pipelines/train_validation_split.py` | Create a chronological 80/20 TRAIN/VALIDATION split |
+| `src/pipelines/preprocessing.py` | Fit preprocessing on TRAIN and transform TRAIN/VALIDATION |
+| `tests/` | Automatically verify reusable production modules |
 | `DVC` | Track and reproduce the complete data pipeline |
 
----
+### Production Logging
+
+All reusable modules under `src/` use the centralized logger instead of `print()` statements.
+
+```text
+src/
+├── utils/
+│   └── logger.py
+├── ingestion/
+│   └── cleaning.py
+├── validation/
+│   └── validate_contract.py
+├── features/
+│   └── feature_engineering.py
+└── pipelines/
+    ├── train_validation_split.py
+    └── preprocessing.py
+```
+
+The common pattern is:
+
+```python
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+```
+
+This provides consistent runtime visibility and allows failures to be logged with useful context and traceback information.
+
+The exploratory scripts under `scripts/` may continue to use `print()` because they serve a different purpose.
 
 ### Data Engineering Flow
 
-```
+The reusable components form the following logical flow:
+
+```text
 Raw Data
     ↓
-Validation
+Data Contract Validation
     ↓
-Cleaning
+Data Cleaning
     ↓
 Feature Engineering
-    │
     ├── Datetime Features
-    └── Haversine Distance
-    │
+    │   ├── pickup_hour
+    │   ├── pickup_day_of_week
+    │   ├── pickup_month
+    │   └── is_weekend
+    └── Geographic Feature
+        └── distance_km
     ↓
 Train / Validation Split
+    └── Chronological 80/20 Split
     ↓
 Preprocessing
-    │
-    ├── Scaling
-    └── One-Hot Encoding
-    │
+    ├── StandardScaler
+    │   └── distance_km
+    └── OneHotEncoder
+        ├── vendor_id
+        └── store_and_fwd_flag
     ↓
 ML-Ready Dataset
 ```
 
----
+### Important Preprocessing Rule
+
+Preprocessing follows the anti-leakage rule established during Step 6:
+
+```text
+TRAIN → Fit Preprocessor → Transform TRAIN → Transform VALIDATION
+```
+
+The preprocessor is never fitted using the complete TRAIN + VALIDATION dataset.
+
+The finalized preprocessing configuration is:
+
+```text
+Numerical:
+    distance_km → StandardScaler
+
+Categorical:
+    vendor_id
+    store_and_fwd_flag → OneHotEncoder(handle_unknown="ignore")
+```
+
+The resulting processed feature set contains:
+
+```text
+numerical__distance_km
+categorical__vendor_id_1
+categorical__vendor_id_2
+categorical__store_and_fwd_flag_N
+categorical__store_and_fwd_flag_Y
+```
+
+### Chronological Train / Validation Strategy
+
+The train/validation split is chronological rather than random.
+
+The finalized implementation uses:
+
+```text
+80% → TRAIN
+20% → VALIDATION
+```
+
+The current dataset produces:
+
+```text
+TRAIN:      1,166,833 records
+VALIDATION:   291,709 records
+```
+
+The chronological boundary was verified:
+
+```text
+TRAIN:      2016-01-01 00:00:17 → 2016-05-24 01:55:00
+VALIDATION: 2016-05-24 01:55:48 → 2016-06-30 23:59:39
+```
+
+Therefore:
+
+```text
+TRAIN maximum < VALIDATION minimum
+```
+
+This preserves the intended future-prediction simulation.
 
 ### Relationship Between `scripts/` and `src/`
 
-The existing scripts document how decisions were explored and validated.
+The existing scripts document how decisions were explored, implemented, analyzed, and validated.
 
-For example:
+The production modules are recreated from the finalized logic in those scripts.
 
+#### Data Cleaning
+
+```text
+scripts/clean.py
+        ↓ finalized cleaning logic
+src/ingestion/cleaning.py
 ```
+
+#### Data Contract Validation
+
+```text
+scripts/validation/validate_contract.py
+        ↓ finalized validation logic
+src/validation/validate_contract.py
+```
+
+#### Feature Engineering
+
+```text
 scripts/5. Feature-Engineering/5.3a-Create-Datetime-Features.py
-                        ↓
-                        │ finalized logic
-                        ↓
+scripts/5. Feature-Engineering/5.4b-Create-Haversine-Distance.py
+        ↓ finalized feature logic
 src/features/feature_engineering.py
 ```
 
-Similarly:
+#### Train / Validation Split
 
-```
+```text
 scripts/6. Train-Validation-Split/6.2-Implement-Train-Validation-Split.py
-                        ↓
-                        │ finalized logic
-                        ↓
+        ↓ finalized split logic
 src/pipelines/train_validation_split.py
 ```
 
-The scripts remain available as **historical evidence and learning artifacts**, while `src/` becomes the source of reusable production logic.
+#### Preprocessing
 
----
+```text
+scripts/6. Train-Validation-Split/6.3-Analyze-Feature-Scaling.py
+scripts/6. Train-Validation-Split/6.4-Analyze-Categorical-Features.py
+scripts/6. Train-Validation-Split/6.5-Verify-Preprocessed-Datasets.py
+        ↓ finalized preprocessing decisions
+src/pipelines/preprocessing.py
+```
+
+The original scripts remain available as historical evidence, learning artifacts, and references.
+
+They are not moved into `src/`.
+
+### Reusability Principle
+
+The production modules are designed as reusable components rather than one large script.
+
+For example:
+
+```text
+feature_engineering.py
+        ↓
+engineer_features()
+        ↓
+returns engineered DataFrame
+```
+
+and:
+
+```text
+train_validation_split.py
+        ↓
+split_train_validation()
+        ↓
+returns X_train, X_val, y_train, y_val
+```
+
+and:
+
+```text
+preprocessing.py
+        ↓
+preprocess_train_validation()
+        ↓
+returns processed TRAIN, processed VALIDATION, and fitted preprocessor
+```
+
+This allows Step 7.2 to connect these components without duplicating their internal logic.
+
+### Current Production Component Flow
+
+The components created so far can be viewed as:
+
+```text
+Data Contract Validation
+        ↓
+Data Cleaning
+        ↓
+Feature Engineering
+        ↓
+Train / Validation Split
+        ↓
+Preprocessing
+        ↓
+ML-Ready Data
+```
+
+Step 7.2 will connect these reusable components into a single executable end-to-end workflow.
 
 ### Design Principles
 
-1. **Do not duplicate production logic unnecessarily.**
-2. **Keep exploration and analysis scripts under `scripts/`.**
-3. **Keep reusable logic under `src/`.**
-4. **Keep automated verification under `tests/`.**
-5. **Keep pipeline orchestration under `src/pipelines/`.**
-6. **Do not introduce unnecessary modules or abstractions.**
-7. **Reuse the finalized decisions from Phase 3 rather than rebuilding exploratory analysis.**
+- Do not duplicate production logic unnecessarily.
+- Keep exploration and analysis scripts under `scripts/`.
+- Keep reusable logic under `src/`.
+- Keep automated verification under `tests/`.
+- Keep pipeline orchestration under `src/pipelines/`.
+- Use centralized logging instead of `print()` in production modules.
+- Do not introduce unnecessary modules or abstractions.
+- Reuse finalized decisions from Phase 3 rather than rebuilding exploratory analysis.
+- Fit preprocessing only on TRAIN data.
+- Keep the original scripts unchanged as historical evidence and learning artifacts.
+- Build production modules by refactoring finalized existing logic rather than blindly copying exploratory scripts.
 
----
+### Verification Status
+
+Each production component created during Step 7.1 was executed and verified independently.
+
+| Module | Verification | Status |
+|---|---|---|
+| `src/utils/logger.py` | Logging verified | ✅ |
+| `src/ingestion/cleaning.py` | Cleaning output verified | ✅ |
+| `src/validation/validate_contract.py` | Contract validation verified | ✅ |
+| `src/features/feature_engineering.py` | Datetime + Haversine features verified | ✅ |
+| `src/pipelines/train_validation_split.py` | Chronological 80/20 split verified | ✅ |
+| `src/pipelines/preprocessing.py` | Scaling + encoding + leakage checks | ✅ |
+
+The reusable components therefore have been individually verified before being connected into the end-to-end pipeline.
 
 ### Expected Outcome
 
-At the end of Step 7, the project should have a clear separation:
+At the end of Step 7.1, the project has a clear separation:
 
-```
-scripts/
-    Learning + Exploration
-    │
-    ↓
-src/
-    Reusable Production Logic
-    │
-    ↓
-tests/
-    Automated Verification
-    │
-    ↓
-pipelines/
-    End-to-End Execution
-    │
-    ↓
-DVC
-    Reproducibility
+```text
+scripts/        Learning + Exploration + Historical Evidence
+        ↓
+src/            Reusable Production Logic
+        ↓
+tests/          Automated Verification
+        ↓
+src/pipelines/  End-to-End Execution
+        ↓
+DVC             Reproducibility
 ```
 
-This architecture will allow Phase 4 to consume the reusable data engineering components without depending on exploratory notebooks or analysis scripts.
-
----
+The project is now ready for Step 7.2 – Implement End-to-End Pipeline, where these independently verified components will be connected into a reproducible workflow.
 
 **Status: Step 7.1 Complete ✅**
 
 ---
 
+## Step 7.2 – Implement End-to-End Pipeline
+
+### Objective
+
+Implement a single end-to-end orchestration pipeline that connects the reusable production modules created in Step 7.1.
+
+The objective is to ensure that the complete Phase 3 data-engineering workflow can be executed through one entry point without duplicating the business logic already implemented in `src/`.
+
+The pipeline is implemented in:
+
+```text
+src/
+└── pipelines/
+    └── run_pipeline.py
+```
+
+The pipeline uses the reusable modules created during Step 7.1 rather than directly executing the historical scripts under `scripts/`.
+
+### Production Pipeline Flow
+
+The final pipeline follows this sequence:
+
+```text
+Raw TRAIN / TEST
+       │
+       ▼
+Pre-Clean Contract Validation
+       │
+       │ Diagnostic
+       ▼
+Data Cleaning
+       │
+       ▼
+Post-Clean Contract Validation
+       │
+       │ Mandatory Gate
+       ├── FAIL → Stop Pipeline
+       └── PASS
+             │
+             ▼
+      Feature Engineering
+        TRAIN only
+             │
+             ▼
+   Chronological Train /
+      Validation Split
+             │
+             ▼
+   TRAIN-only Preprocessing
+             │
+             ▼
+   Preprocessed Dataset
+       Verification
+             │
+             ▼
+       ML-Ready Data
+```
+
+### Pipeline Entry Point
+
+The complete workflow is executed through:
+
+```text
+src/pipelines/run_pipeline.py
+```
+
+Run from the project root using:
+
+```bash
+python -m src.pipelines.run_pipeline
+```
+
+Using module execution ensures that the `src` package is resolved correctly and allows the production modules to import each other consistently.
+
+### Stage 1 – Pre-Clean Data Contract Validation
+
+The pipeline first validates the raw TRAIN and TEST datasets against the project data contract.
+
+This validation is diagnostic rather than blocking. The raw datasets are allowed to contain known data-quality violations because these violations are expected to be handled by the cleaning stage.
+
+For the current dataset, the pre-clean validation identified:
+
+```text
+TRAIN: passenger_count > 0 → 60 invalid records
+TEST:  passenger_count > 0 → 23 invalid records
+```
+
+These violations were logged but did not stop the pipeline.
+
+The pipeline therefore follows:
+
+```text
+Raw Data
+    ↓
+Contract Validation
+    ↓
+Known raw-data violations
+    ↓
+Continue to Cleaning
+```
+
+This prevents the contract validation stage from blocking the cleaning process that is specifically responsible for handling these raw-data quality issues.
+
+### Stage 2 – Data Cleaning
+
+The reusable cleaning module, `src/ingestion/cleaning.py`, is executed through its reusable functions.
+
+The pipeline receives:
+
+```text
+train_clean
+test_clean
+train_audit
+test_audit
+```
+
+The cleaning stage also produces a detailed audit describing why records were removed.
+
+#### TRAIN Cleaning Audit
+
+```text
+Original Records       : 1,458,644
+Invalid Passenger      : 60
+Invalid Coordinates    : 38
+Extreme Outliers       : 4
+Total Removed          : 102
+Final Records          : 1,458,542
+```
+
+The removal count is fully reconciled:
+
+```text
+60 + 38 + 4 = 102
+```
+
+#### TEST Cleaning Audit
+
+```text
+Original Records       : 625,134
+Invalid Passenger      : 23
+Invalid Coordinates    : 19
+Total Removed          : 42
+Final Records          : 625,092
+```
+
+The removal count is fully reconciled:
+
+```text
+23 + 19 = 42
+```
+
+The cleaning audit is logged through the centralized project logger, providing traceability without using `print()` statements.
+
+### Stage 3 – Post-Clean Data Contract Validation
+
+After cleaning, the pipeline performs a second data-contract validation.
+
+Unlike the pre-clean validation, this validation is a mandatory quality gate.
+
+```text
+Cleaning
+    ↓
+Post-Clean Contract Validation
+    ↓
+PASS → Continue
+FAIL → Stop Pipeline
+```
+
+The cleaned TRAIN and TEST datasets were successfully validated.
+
+Final result:
+
+```text
+RESULT: PASS
+All implemented data-contract rules passed.
+```
+
+This ensures that downstream feature engineering and ML preparation only operate on datasets satisfying the implemented data contract.
+
+### Stage 4 – Feature Engineering
+
+The reusable feature-engineering module, `src/features/feature_engineering.py`, is used to create the finalized Phase 3C features.
+
+The production feature set includes:
+
+```text
+pickup_hour
+pickup_day_of_week
+pickup_month
+is_weekend
+distance_km
+```
+
+The features are derived only from prediction-time information.
+
+#### Training Pipeline Decision
+
+During implementation, we identified that the TEST engineered DataFrame was not required for the training/validation pipeline.
+
+Therefore, the final training pipeline performs feature engineering on TRAIN only:
+
+```text
+Clean TRAIN
+    ↓
+Feature Engineering
+    ↓
+Train / Validation Split
+```
+
+TEST is still cleaned and contract validated, but is not unnecessarily feature-engineered during the training pipeline.
+
+The same reusable feature-engineering logic will be used later when TEST/inference data is required for prediction.
+
+This avoids unnecessary computation while preserving the reusable feature-engineering module.
+
+### Stage 5 – Chronological Train / Validation Split
+
+The reusable module, `src/pipelines/train_validation_split.py`, creates the TRAIN/VALIDATION datasets.
+
+Because the project is time-dependent, the split is chronological rather than random.
+
+Final split:
+
+```text
+Total records      : 1,458,542
+Training records   : 1,166,833
+Validation records :   291,709
+```
+
+Equivalent proportions:
+
+```text
+Training   : 80%
+Validation : 20%
+```
+
+#### Temporal Ranges
+
+Training:
+
+```text
+2016-01-01 00:00:17
+        ↓
+2016-05-24 01:55:00
+```
+
+Validation:
+
+```text
+2016-05-24 01:55:48
+        ↓
+2016-06-30 23:59:39
+```
+
+The training period ends before the validation period begins.
+
+This preserves the temporal nature of the problem and prevents future observations from being used to construct the historical training set.
+
+### Stage 6 – Preprocessing
+
+The reusable preprocessing module, `src/pipelines/preprocessing.py`, performs the finalized preprocessing strategy.
+
+#### Numerical Feature
+
+`distance_km` is standardized using `StandardScaler`.
+
+#### Categorical Features
+
+`vendor_id` and `store_and_fwd_flag` are encoded using `OneHotEncoder`.
+
+Unknown categories are handled using:
+
+```text
+handle_unknown = "ignore"
+```
+
+#### TRAIN-Only Fitting
+
+The preprocessing pipeline is fitted only on TRAIN:
+
+```text
+TRAIN
+    ↓
+Fit scaler
+Fit encoder
+    ↓
+Transform TRAIN
+    ↓
+Transform VALIDATION
+```
+
+Validation data is never used to fit the preprocessing transformations.
+
+This prevents preprocessing-related data leakage.
+
+### Stage 7 – Preprocessed Dataset Verification
+
+The preprocessing module verifies the resulting datasets before they are persisted.
+
+Final shapes:
+
+```text
+Original X_train : (1,166,833, 8)
+Original X_val   : (291,709, 8)
+
+Processed X_train: (1,166,833, 5)
+Processed X_val  : (291,709, 5)
+```
+
+The verification confirms:
+
+- No missing values
+- No infinite values
+- Compatible TRAIN / VALIDATION feature columns
+- Same feature count
+- Numerical scaling completed
+- Categorical encoding completed
+- TRAIN-only preprocessing maintained
+
+Final verification status:
+
+```text
+PASS - Preprocessed datasets are valid and compatible.
+```
+
+### Output Artifacts
+
+The pipeline produces the following datasets:
+
+#### Train / Validation Split
+
+```text
+data/split/
+├── X_train.csv
+├── X_val.csv
+├── y_train.csv
+└── y_val.csv
+```
+
+#### Processed Datasets
+
+```text
+data/processed/
+├── X_train_processed.csv
+└── X_val_processed.csv
+```
+
+These datasets are ready for consumption by the ML training stage in Phase 4.
+
+### Centralized Logging
+
+The end-to-end pipeline uses the project's centralized logger rather than `print()` statements.
+
+Example:
+
+```text
+2026-08-15 ... - INFO - __main__ - PHASE 3 - END-TO-END DATA ENGINEERING PIPELINE STARTED
+```
+
+Individual reusable modules also report their progress through the same logging system.
+
+This provides visibility into:
+
+- Pipeline start
+- Validation
+- Cleaning
+- Cleaning audit
+- Feature engineering
+- Train/validation split
+- Preprocessing
+- Verification
+- Output persistence
+- Pipeline completion/failure
+
+If an unexpected exception occurs, the pipeline logs the exception and stops rather than silently continuing.
+
+### Final End-to-End Verification
+
+The final execution successfully completed the complete Phase 3 workflow.
+
+The pipeline confirmed:
+
+```text
+Pre-clean validation
+        ↓
+Cleaning
+        ↓
+Post-clean validation → PASS
+        ↓
+Feature engineering → TRAIN only
+        ↓
+Chronological split → 80/20
+        ↓
+TRAIN-only preprocessing
+        ↓
+Processed dataset verification → PASS
+        ↓
+Output persistence
+        ↓
+Pipeline completed successfully
+```
+
+The final log confirms:
+
+```text
+PHASE 3 - END-TO-END DATA ENGINEERING PIPELINE COMPLETED
+```
+
+### Key Design Decisions
+
+1. **Pre-clean validation is diagnostic.** Raw-data contract violations do not automatically stop the pipeline because known violations are handled by the cleaning stage.
+2. **Post-clean validation is a mandatory gate.** If the cleaned datasets fail the implemented data contract, the pipeline stops before downstream ML preparation.
+3. **TEST is not unnecessarily feature-engineered.** The training pipeline only feature-engineers TRAIN because TEST is not required for the train/validation split or preprocessing stage. The reusable feature-engineering module remains available for future inference/test processing.
+4. **Reusable modules are orchestrated rather than duplicated.** `run_pipeline.py` connects the existing `src/` modules instead of recreating their internal logic.
+5. **Logging is centralized.** The production pipeline uses the project's logger rather than `print()` statements.
+
+### Step 7.2 Outcome
+
+The Phase 3 data-engineering workflow is now executable through a single production-oriented entry point:
+
+```bash
+python -m src.pipelines.run_pipeline
+```
+
+The pipeline successfully connects:
+
+```text
+Validation
+    ↓
+Cleaning
+    ↓
+Validation Gate
+    ↓
+Feature Engineering
+    ↓
+Train / Validation Split
+    ↓
+Preprocessing
+    ↓
+Verification
+    ↓
+ML-Ready Data
+```
+
+The implementation is reproducible, observable, modular, and ready for automated testing in Step 7.3 – Pipeline Testing & Validation.
+
+**Status: Step 7.2 Complete ✅**
+
+---
+
+## Step 7.3 – Pipeline Testing & Validation
+
+### Objective
+
+Establish automated tests that validate the reusable production modules, the pipeline's data and processing invariants, leakage controls, and the complete end-to-end workflow.
+
+The tests will provide repeatable evidence that the Phase 3 data-engineering pipeline behaves correctly as it evolves.
+
+### Step 7.3a – Setup Automated Testing with pytest
+
+#### Objective
+
+Establish `pytest` as the automated testing framework for the project's reusable production modules.
+
+#### Implementation
+
+Added `pytest` as a development/testing dependency:
+
+```text
+requirements.txt
+    ↓
+pytest
+```
+
+#### Freeze Project Dependencies
+
+After installing the required testing dependency, regenerate the locked dependency file from the active virtual environment:
+
+```powershell
+python -m pip freeze > requirements-lock.txt
+```
+
+Verify that `pytest` was captured in the lock file:
+
+```powershell
+Select-String "pytest" requirements-lock.txt
+```
+
+The exact installed version is captured in `requirements-lock.txt` using the existing project dependency-freezing workflow.
+
+#### Verification
+
+Pytest was successfully installed and verified:
+
+```text
+Python 3.12.9
+pytest 9.1.1
+```
+
+The test runner successfully started from the project virtual environment:
+
+```bash
+python -m pytest -v
+```
+
+At this stage:
+
+```text
+collected 0 items
+no tests ran
+```
+
+This is expected because automated tests are created in the following steps.
+
+Pytest import was also verified successfully.
+
+#### Outcome
+
+The automated testing environment is ready for testing the reusable production modules in `src/`.
+
+**Step 7.3a → PASS ✅**
+
+**Status: Step 7.3a Complete ✅**
+
+### Step 7.3b – Test Production Modules
+
+#### Objective
+
+Verify that the reusable production modules created under `src/` can be imported successfully and expose their expected public functions.
+
+#### Test File
+
+```text
+tests/
+└── test_production_modules.py
+```
+
+#### Modules Tested
+
+| Production Module | Status |
+|---|---|
+| `src/ingestion/cleaning.py` | PASS |
+| `src/validation/validate_contract.py` | PASS |
+| `src/features/feature_engineering.py` | PASS |
+| `src/pipelines/train_validation_split.py` | PASS |
+| `src/pipelines/preprocessing.py` | PASS |
+
+#### Test Execution
+
+```bash
+python -m pytest tests/test_production_modules.py -v
+```
+
+#### Result
+
+```text
+collected 5 items
+5 passed in 10.68s
+```
+
+All five production modules successfully imported and exposed their expected public functions.
+
+#### What This Test Covers
+
+This is a smoke test that verifies the structural health of the reusable production modules.
+
+It can detect issues such as:
+
+- Broken imports
+- Missing public functions
+- Syntax/import errors
+- Missing module dependencies
+
+It does not execute the complete data-processing logic or validate business rules. Those behaviors are covered by subsequent pipeline and data-invariant tests.
+
+#### Outcome
+
+The production module smoke tests passed successfully.
+
+**Step 7.3b → PASS ✅**
+
+**Status: Step 7.3b Complete ✅**
+
+### Step 7.3c – Test Data & Pipeline Invariants
+
+#### Objective
+
+Verify important data and pipeline properties that must always remain true.
+
+#### Tests
+
+The following invariants were tested:
+
+- TRAIN + VALIDATION records are conserved.
+- TRAIN and VALIDATION preserve chronological ordering.
+- TRAIN and VALIDATION contain compatible feature columns.
+- Processed datasets contain no missing values.
+- Processed datasets contain no infinite values.
+
+#### Verification
+
+```powershell
+python -m pytest tests/test_pipeline_invariants.py -v
+```
+
+#### Result
+
+```text
+5 passed in 2.25s
+```
+
+All pipeline invariant tests passed successfully.
+
+**Status: Step 7.3c Complete ✅**
+
+### Step 7.3d – Test Preprocessing & Leakage Controls
+
+#### Objective
+
+Verify that the preprocessing workflow produces compatible TRAIN / VALIDATION datasets and maintains the finalized preprocessing behavior.
+
+#### Tests
+
+- TRAIN and VALIDATION produce the same number of processed features.
+- Processed datasets contain only finite values.
+- TRAIN and VALIDATION have compatible processed shapes.
+- The production logs confirm that the preprocessor is fitted on TRAIN and then used to transform VALIDATION.
+
+#### Verification
+
+```powershell
+python -m pytest tests/test_preprocessing_leakage.py -v
+```
+
+#### Result
+
+```text
+3 passed in 1.62s
+```
+
+All preprocessing and leakage-control tests passed successfully.
+
+**Status: Step 7.3d Complete ✅**
+
+### Step 7.3e – End-to-End Pipeline Test
+
+#### Objective
+
+Verify that the complete Phase 3 production pipeline executes successfully and produces the expected ML-ready artifacts.
+
+#### Verification
+
+```powershell
+python -m pytest tests/test_end_to_end_pipeline.py -v
+```
+
+#### Result
+
+```text
+1 passed in 31.20s
+```
+
+The test verified successful pipeline execution, completion logging, expected output artifacts, and final processed dataset shapes.
+
+**Status: Step 7.3e Complete ✅**
+
+### 🔒 Step 7.3 — Pipeline Testing & Validation
+
+All testing layers are now complete:
+
+```text
+7.3a  pytest environment              ✅
+7.3b  Production module smoke tests   ✅ 5 passed
+7.3c  Pipeline invariants             ✅ 5 passed
+7.3d  Preprocessing/leakage tests     ✅ 3 passed
+7.3e  End-to-end pipeline             ✅ 1 passed
+```
+
+**Step 7.3 Complete ✅**
