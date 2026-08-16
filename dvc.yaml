@@ -1,0 +1,15 @@
+stages:
+  phase3:
+    cmd: python -m src.pipelines.run_pipeline
+    deps:
+      - configs/data_contract.yaml
+      - data/raw/test.csv
+      - data/raw/train.csv
+      - src
+    params:
+      - params.yaml:
+          - split.validation_size
+    outs:
+      - data/interim
+      - data/processed
+      - data/split

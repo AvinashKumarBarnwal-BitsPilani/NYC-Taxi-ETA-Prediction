@@ -23,10 +23,10 @@ Run from the project root:
     python -m src.pipelines.run_pipeline
 """
 
-#from src.features.feature_engineering import engineer_train_test
 from src.features.feature_engineering import engineer_features
 
-#from src.ingestion.cleaning import clean_raw_data
+from pathlib import Path
+import yaml
 
 from src.ingestion.cleaning import (
     clean_raw_data,
@@ -53,6 +53,38 @@ from src.validation.validate_contract import (
 
 logger = get_logger(__name__)
 
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PARAMS_PATH = PROJECT_ROOT / "params.yaml"
+
+def load_pipeline_params() -> dict:
+    """Load DVC-controlled pipeline parameters."""
+
+    logger.info("Loading pipeline parameters: %s", PARAMS_PATH)
+
+    if not PARAMS_PATH.exists():
+        raise FileNotFoundError(
+            f"Pipeline parameters file not found: {PARAMS_PATH}"
+        )
+
+    with PARAMS_PATH.open("r", encoding="utf-8") as file:
+        params = yaml.safe_load(file) or {}
+
+    validation_size = params.get("split", {}).get(
+        "validation_size"
+    )
+
+    if validation_size is None:
+        raise KeyError(
+            "Missing required parameter: split.validation_size"
+        )
+
+    logger.info(
+        "Pipeline parameter - validation_size=%s",
+        validation_size,
+    )
+
+    return params
 
 def validate_before_cleaning() -> None:
     """Run contract validation on raw data as a diagnostic pre-cleaning check.
@@ -117,6 +149,9 @@ def run_pipeline() -> None:
     logger.info("=" * 70)
     logger.info("PHASE 3 - END-TO-END DATA ENGINEERING PIPELINE STARTED")
     logger.info("=" * 70)
+
+    params = load_pipeline_params()
+    validation_size = params["split"]["validation_size"]
 
     try:
         # ------------------------------------------------------------------
@@ -195,7 +230,10 @@ def run_pipeline() -> None:
             X_val,
             y_train,
             y_val,
-        ) = split_train_validation(train_engineered)
+        ) = split_train_validation(
+            train_engineered,
+            validation_size=validation_size,
+        )
 
         save_split_datasets(
             X_train,
