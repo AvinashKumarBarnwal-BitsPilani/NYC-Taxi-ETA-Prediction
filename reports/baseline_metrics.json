@@ -1,0 +1,11 @@
+{
+  "model": "DummyRegressor",
+  "strategy": "mean",
+  "training_rows": 1166833,
+  "validation_rows": 291709,
+  "metrics": {
+    "rmse": 3258.366782573327,
+    "mae": 641.4636558199387,
+    "r2": -0.00040622054028571775
+  }
+}

@@ -4358,3 +4358,191 @@ The most important outcome is a **clean contract between Phase 3 and Phase 4**:
 ```
 
 When Phase 4 begins, work starts directly with model building rather than returning to cleaning, feature engineering, splitting, or preprocessing.
+
+---
+
+# 🔧 Post-Completion Engineering Update – Persisted Preprocessor
+
+> **Added after Phase 3 completion during Phase 4 interface verification**
+
+## Why This Update Was Required
+
+Phase 3 was initially completed with verified ML-ready datasets and a leakage-safe preprocessing pipeline. During the transition to **Phase 4 – Model Building**, an additional integration requirement was identified: the fitted preprocessing transformer must be persisted so that the exact same preprocessing logic learned during training can be reused for inference.
+
+The existing Phase 3 pipeline correctly:
+
+- Fitted preprocessing only on `X_train`
+- Transformed `X_train`
+- Transformed `X_val`
+- Generated ML-ready datasets
+
+However, the fitted preprocessing object was not initially persisted as a reusable artifact. This created a potential gap between training-time and future inference-time preprocessing.
+
+## The Fix
+
+The Phase 3 preprocessing pipeline was updated to persist the fitted `ColumnTransformer` using `joblib`.
+
+```text
+data/processed/
+├── preprocessor.joblib
+├── X_train_processed.csv
+└── X_val_processed.csv
+```
+
+The artifact represents the transformation fitted using training data and can transform compatible prediction data into the same representation used during model training.
+
+## What `preprocessor.joblib` Contains
+
+The persisted object is the fitted `ColumnTransformer`:
+
+```text
+Numerical
+└── distance_km
+      ↓
+  StandardScaler
+
+Categorical
+├── vendor_id
+└── store_and_fwd_flag
+      ↓
+  OneHotEncoder
+```
+
+It produces these five ML-ready features:
+
+```text
+numerical__distance_km
+categorical__vendor_id_1.0
+categorical__vendor_id_2.0
+categorical__store_and_fwd_flag_N
+categorical__store_and_fwd_flag_Y
+```
+
+## Leakage-Safe Persistence Design
+
+```text
+X_train
+   │
+   ▼
+Fit preprocessor
+   ├──► Transform X_train
+   └──► Transform X_val
+   │
+   ▼
+Persist fitted preprocessor
+   │
+   ▼
+preprocessor.joblib
+```
+
+The preprocessor is fitted only on training data. Validation data is never used to fit the scaler or encoder.
+
+## Verification of the Persisted Preprocessor
+
+The persisted artifact was explicitly tested:
+
+```text
+Fitted preprocessor can be loaded       → PASS
+Preprocessor contains fitted state      → PASS
+New compatible data can be transformed  → PASS
+Expected feature count                  → 5
+Expected feature names                  → PASS
+```
+
+An automated regression test was added:
+
+```text
+tests/test_preprocessor_persistence.py
+```
+
+The complete automated test suite subsequently passed with **15 tests**. This protects the persisted preprocessing interface against future regressions.
+
+## Phase 3 → Phase 4 → Phase 5 Interface
+
+```text
+PHASE 3 — Data Engineering
+Raw data → cleaning → feature engineering → train/validation split
+        → fit preprocessor on training data only
+        ├── X_train_processed.csv
+        ├── X_val_processed.csv
+        └── preprocessor.joblib
+                         │
+                         ▼
+PHASE 4 — Model Building
+X_train_processed.csv + y_train.csv
+        → train, evaluate, compare, and tune models
+        ├── trained model
+        └── evaluation artifacts
+                         │
+                         ▼
+PHASE 5 — Inference / Prediction
+New prediction-time data → feature engineering → load preprocessor
+        → transform data → load final model → predict trip_duration
+```
+
+### Simplified Production Flow
+
+```text
+Phase 3: ML-ready data + preprocessor.joblib
+                         │
+                         ▼
+Phase 4: final_model.joblib
+                         │
+                         ▼
+Phase 5: transform new data and predict ETA
+```
+
+## Phase Responsibility Boundary
+
+| Responsibility | Phase 3 | Phase 4 | Phase 5 |
+|---|:---:|:---:|:---:|
+| Data cleaning | ✅ | ❌ | ❌* |
+| Feature-engineering logic | ✅ | ❌ | ✅ |
+| Train/validation split | ✅ | ❌ | ❌ |
+| Fit preprocessing transformer | ✅ | ❌ | ❌ |
+| Persist preprocessing transformer | ✅ | ❌ | ❌ |
+| Model training, comparison, and tuning | ❌ | ✅ | ❌ |
+| Final-model artifact | ❌ | ✅ | Load |
+| Preprocessor artifact | Create | Use/verify | Load |
+| Prediction | ❌ | ❌ | ✅ |
+
+\* Phase 5 uses the approved inference data-preparation path; it must not retrain or alter Phase 3 preprocessing state.
+
+## Final Phase 3 → Phase 4 Contract
+
+Phase 3 hands over:
+
+```text
+DATA
+├── data/processed/X_train_processed.csv
+├── data/processed/X_val_processed.csv
+├── data/split/y_train.csv
+└── data/split/y_val.csv
+
+PREPROCESSING ARTIFACT
+└── data/processed/preprocessor.joblib
+```
+
+Phase 4 consumes these artifacts to build candidate models, evaluation results, comparisons, hyperparameter-tuning results, and a final model.
+
+Phase 5 will consume:
+
+```text
+preprocessor.joblib + final trained model + new prediction-time data
+        ↓
+Predicted trip_duration
+```
+
+## Final Engineering Outcome
+
+```text
+Before: Phase 3 produced ML-ready CSVs, but preprocessing state was not explicitly persisted.
+
+After:  Phase 3 produces ML-ready CSVs and preprocessor.joblib.
+        Phase 4 trains and saves the final model.
+        Phase 5 loads both artifacts to transform new data and make predictions.
+```
+
+**Status: Engineering correction COMPLETE ✅**
+
+The Phase 3 → Phase 4 interface is now explicitly defined and operational, including persistence of the fitted preprocessing transformer.
