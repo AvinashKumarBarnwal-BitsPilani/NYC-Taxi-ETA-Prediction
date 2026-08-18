@@ -5,52 +5,29 @@
 - [Phase 4.1 - Modeling Strategy & Data Contract](#phase-41)
 - [Phase 4.2 - Establish Baseline Model](#phase-42)
 - [Phase 4.3 - Train Candidate Models](#phase-43)
+- [Phase 4.4 - Evaluate & Compare Models](#phase-44)
+- [Phase 4.5 — Hyperparameter Tuning](#phase-45)
+- [Phase 4.6 — Final Model Selection & Retraining](#phase-46)
+- [Phase 4.7 — Final Model Handover](#phase-47)
 
 ---
 
-<a id="phase-41"></a>
+## Phase 4 - Start to End Flow (With Phase 3 & Phase 5)
 
-## Phase 4.1 – Modeling Strategy & Data Contract
+The overall Phase 4 workflow is:
 
-### 1. Overview
-
-Phase 4 focuses on building, evaluating, tuning, and selecting the machine learning model for the NYC Taxi ETA Prediction project.
-
-Before model training begins, Phase 4.1 establishes two important foundations:
-
-1. **Modeling Strategy**
-2. **Phase 3 → Phase 4 Data Contract**
-
-The purpose of this phase is to ensure that:
-
-- The machine learning problem is clearly defined.
-- The target variable is explicitly identified.
-- The evaluation metrics are standardized.
-- The expected model features are fixed.
-- The Phase 3 output is validated before model training.
-- Unexpected changes in feature names, feature order, row counts, data types, or missing values are detected early.
-
-Phase 4.1 does **not** perform model training, feature engineering, data cleaning, preprocessing, or train/validation splitting.
-
-Those responsibilities belong to other phases of the project.
-
----
-
-### 2. Position of Phase 4.1 in the ML Pipeline
-
-The overall ML Engineering workflow is:
-
-```text
-                         PHASE 3
+```text                  
+                       PHASE 3
                    Data Engineering
                           │
-              ┌───────────┴───────────┐
-              │                       │
-              ▼                       ▼
-    X_train_processed.csv     X_val_processed.csv
-    y_train.csv               y_val.csv
-              │                       │
-              └───────────┬───────────┘
+              ┌───────────┼───────────┐
+              │           │           │
+              ▼           ▼           ▼
+    X_train_processed.csv │   X_val_processed.csv
+    y_train.csv           │   y_val.csv
+              │   preprocessor.joblib
+              │           │           │
+              └───────────┼───────────┘
                           │
                           ▼
                 ┌─────────────────────┐
@@ -62,28 +39,50 @@ The overall ML Engineering workflow is:
                 └──────────┬──────────┘
                            │
                            ▼
-                     PHASE 4.2
-                 Baseline Model
+                ┌─────────────────────┐
+                │      PHASE 4.2      │
+                │                     │
+                │   Baseline Model    │
+                └──────────┬──────────┘
                            │
                            ▼
-                     PHASE 4.3
-                 Candidate Models
+                ┌─────────────────────┐
+                │      PHASE 4.3      │
+                │                     │
+                │  Candidate Models   │
+                └──────────┬──────────┘
                            │
                            ▼
-                     PHASE 4.4
-               Evaluation & Comparison
+                ┌─────────────────────┐
+                │      PHASE 4.4      │
+                │                     │
+                │  Evaluation &       │
+                │  Comparison         │
+                └──────────┬──────────┘
                            │
                            ▼
-                     PHASE 4.5
-                Hyperparameter Tuning
+                ┌─────────────────────┐
+                │      PHASE 4.5      │
+                │                     │
+                │  Hyperparameter     │
+                │  Tuning             │
+                └──────────┬──────────┘
                            │
                            ▼
-                     PHASE 4.6
-              Select & Retrain Final Model
+                ┌─────────────────────┐
+                │      PHASE 4.6      │
+                │                     │
+                │  Select & Retrain   │
+                │  Final Model        │
+                └──────────┬──────────┘
                            │
                            ▼
-                     PHASE 4.7
-             Save Model & Handover Artifacts
+                ┌─────────────────────┐
+                │      PHASE 4.7      │
+                │                     │
+                │  Save Model &       │
+                │  Handover Artifacts │
+                └──────────┬──────────┘
                            │
                            ▼
                  ┌─────────────────────┐
@@ -113,6 +112,33 @@ The overall ML Engineering workflow is:
                        ▼
                  Predicted ETA
 ```
+
+<a id="phase-41"></a>
+
+## Phase 4.1 – Modeling Strategy & Data Contract
+
+### 1. Overview
+
+Phase 4 focuses on building, evaluating, tuning, and selecting the machine learning model for the NYC Taxi ETA Prediction project.
+
+Before model training begins, Phase 4.1 establishes two important foundations:
+
+1. **Modeling Strategy**
+2. **Phase 3 → Phase 4 Data Contract**
+
+The purpose of this phase is to ensure that:
+
+- The machine learning problem is clearly defined.
+- The target variable is explicitly identified.
+- The evaluation metrics are standardized.
+- The expected model features are fixed.
+- The Phase 3 output is validated before model training.
+- Unexpected changes in feature names, feature order, row counts, data types, or missing values are detected early.
+
+Phase 4.1 does **not** perform model training, feature engineering, data cleaning, preprocessing, or train/validation splitting.
+
+Those responsibilities belong to other phases of the project.
+
 
 ---
 
@@ -1558,20 +1584,1012 @@ The training workflow will use the model factory to construct the configured can
 
 ### 4.3.3 Implement Candidate Training Workflow
 
-*Placeholder: Content to be added*
+**Purpose**
+Implement the initial training workflow for all enabled candidate regression models using the existing Phase 3 ML-ready datasets.
+
+**Implementation**
+
+Created:
+- `src/training/candidate_training.py`
+
+The workflow:
+- Loads `configs/modeling.yaml`.
+- Loads Phase 3 ML-ready training and validation datasets.
+- Validates the Phase 3 → Phase 4 data contract.
+- Identifies enabled candidate models.
+- Creates models using `src/training/model_factory.py`.
+- Trains candidates using `X_train` / `y_train` only.
+- Generates predictions on `X_val`.
+- Calculates RMSE, MAE and R².
+- No preprocessing is performed or refitted in Phase 4.
+
+**Candidate Models**
+- LinearRegression
+- RandomForestRegressor
+- XGBRegressor
+
+**Initial Results**
+
+| Model | RMSE | MAE | R² |
+|---|---|---|---|
+| Linear Regression | 3205.0706 | 467.0761 | 0.032053 |
+| Random Forest | 3236.4813 | 464.3314 | 0.012988 |
+| XGBoost | 3203.3086 | 451.0966 | 0.033117 |
+
+Current best candidate by primary metric (RMSE): **XGBoost**.
+
+**Verification**
+
+Candidate training completed successfully for all three models using:
+- Training rows: 1,166,833
+- Validation rows: 291,709
+- Features: 5
+
+Phase 4 data-contract validation passed.
+
+**Status: 4.3.3 – COMPLETED ✅**
+
+---
 
 ### 4.3.4 Add MLflow Tracking
 
-*Placeholder: Content to be added*
+**Purpose**
+Track each candidate-model training run and its evaluation metrics using MLflow.
+
+**Implementation**
+
+MLflow experiment:
+- `NYC-Taxi-ETA-Model-Development`
+
+One MLflow run is created per candidate model.
+
+Each run records:
+- Model type
+- Problem type
+- Target
+- Training/validation row counts
+- Feature count
+- RMSE
+- MAE
+- R²
+- Phase/model-role/metric-priority tags
+
+**Candidate Runs**
+- `candidate_linear_regression`
+- `candidate_random_forest`
+- `candidate_xgboost`
+
+**Verification**
+
+MLflow UI was verified locally at:
+- `http://127.0.0.1:5000`
+
+The experiment contains all three candidate runs along with the Phase 4.2 baseline run:
+- `baseline_dummy_regressor_mean`
+- `candidate_linear_regression`
+- `candidate_random_forest`
+- `candidate_xgboost`
+
+MLflow tracking successfully records the candidate metrics and run metadata.
+
+**Status: 4.3.4 – COMPLETED ✅**
+
+---
 
 ### 4.3.5 Persist Intermediate Candidate Models
 
-*Placeholder: Content to be added*
+**Purpose**
+Persist the trained candidate models so they can be reused during later Phase 4 activities without retraining.
+
+**Implementation**
+
+The trained candidate models are persisted using `joblib`.
+
+Artifacts are saved under the configured `models/` directory:
+
+```text
+models/
+├── linear_regression.joblib
+├── random_forest.joblib
+└── xgboost.joblib
+```
+
+Persistence is handled by `persist_candidate_model()` in:
+
+src/training/candidate_training.py
+
+
+The function creates the model directory when required and saves each trained candidate as:
+
+<model_name>.joblib
+
+
+**Verification**
+
+Candidate training was executed successfully and all three model artifacts were created.
+
+| Artifact | Size |
+|---|---|
+| `linear_regression.joblib` | 1.1 KB |
+| `random_forest.joblib` | ~37 MB |
+| `xgboost.joblib` | ~0.77 MB |
+
+**Status: 4.3.5 – COMPLETED ✅**
 
 ### 4.3.6 Add Tests
 
-*Placeholder: Content to be added*
+**Purpose**
+Add focused tests covering the candidate training workflow.
 
-### 4.3.7 Execute and Verify All Candidates
+**Implementation**
 
-*Placeholder: Content to be added*
+Added focused tests in:
+```text
+tests/test_candidate_training.py
+```
+
+The tests verify:
+- Enabled candidate models are loaded from `modeling.yaml`.
+- Persisted candidate models can be reloaded successfully.
+
+**Verification**
+
+```text
+2 passed
+```
+
+**Status: 4.3.6 – COMPLETED ✅**
+
+---
+
+### 4.3.7 Execute & Verify Candidates
+
+**Purpose**
+Execute the complete candidate training workflow end-to-end and verify all outputs.
+
+**Implementation**
+
+Executed the complete candidate training workflow for:
+```text
+Linear Regression
+Random Forest
+XGBoost
+```
+
+Verified:
+- All candidates trained successfully.
+- Validation metrics were generated.
+- MLflow runs were created.
+- Candidate `.joblib` artifacts were created.
+- All persisted models were successfully reloaded.
+- Focused candidate-training tests passed.
+
+Model artifacts:
+```text
+models/
+├── linear_regression.joblib
+├── random_forest.joblib
+└── xgboost.joblib
+```
+
+**Final candidate metrics from the verified run**
+
+| Model | RMSE | MAE | R² |
+|---|---|---|---|
+| Linear Regression | 3205.0706 | 467.0761 | 0.032053 |
+| Random Forest | 3236.4813 | 464.3314 | 0.012988 |
+| XGBoost | 3203.3086 | 451.0966 | 0.033117 |
+
+XGBoost is currently the best candidate by RMSE. Final model selection remains part of later Phase 4 activities.
+
+**Status: 4.3.7 – COMPLETED ✅**
+
+---
+
+### 4.3 Progress
+
+```text
+4.3.1 Candidate Model Configuration       ✅
+4.3.2 Reusable Candidate-Model Factory    ✅
+4.3.3 Candidate Training Workflow         ✅
+4.3.4 MLflow Tracking                     ✅
+4.3.5 Persist Candidate Models            ✅
+4.3.6 Add Tests                           ✅
+4.3.7 Execute & Verify Candidates         ✅
+```
+
+---
+<a id="phase-44"></a>
+## Phase 4.4 Evaluate & Compare Models
+
+### 4.4.1 Define Evaluation & Comparison Contract
+
+**Purpose**
+Define a common evaluation contract for all candidate models.
+
+**Evaluation Metrics**
+
+| Priority | Metric | Direction |
+|---|---|---|
+| Primary | RMSE | Lower is better |
+| Secondary | MAE | Lower is better |
+| Context | R² | Higher is better |
+
+The Phase 4.2 baseline remains the reference benchmark:
+- RMSE = 3258.3668
+- MAE = 641.4637
+- R² = -0.000406
+
+All candidates are evaluated on the same validation dataset using the same metrics.
+
+**Status: 4.4.1 – COMPLETED ✅**
+
+---
+
+### 4.4.2 Implement Model Evaluation Workflow
+
+**Purpose**
+Implement a workflow to evaluate all persisted candidate models on the validation dataset.
+
+**Implementation**
+
+Created:
+
+src/training/model_evaluation.py
+
+
+The workflow:
+- Loads and validates the Phase 4 modeling configuration.
+- Loads the Phase 3 training/validation datasets.
+- Validates the Phase 3 → Phase 4 data contract.
+- Loads persisted candidate models from `models/`.
+- Generates validation predictions.
+- Calculates RMSE, MAE and R² for each candidate.
+- No model training or preprocessing is performed in this step.
+
+**Result**
+
+```text
+linear_regression → RMSE: 3205.0706
+random_forest     → RMSE: 3236.4813
+xgboost           → RMSE: 3203.3086
+```
+
+**Status: 4.4.2 – COMPLETED ✅**
+
+---
+
+### 4.4.3 Generate Model Comparison Results
+
+**Purpose**
+Persist a consolidated comparison of baseline and candidate model performance.
+
+**Implementation**
+
+Evaluation results are persisted to:
+
+reports/candidate_model_comparison.json
+
+
+The report contains:
+- `primary_metric`
+- `secondary_metric`
+- `context_metric`
+- `baseline`
+- `candidates`
+
+**Current Comparison**
+
+| Model | RMSE | MAE | R² |
+|---|---|---|---|
+| Baseline | 3258.3668 | 641.4637 | -0.000406 |
+| Linear Regression | 3205.0706 | 467.0761 | 0.032053 |
+| Random Forest | 3236.4813 | 464.3314 | 0.012988 |
+| XGBoost | 3203.3086 | 451.0966 | 0.033117 |
+
+Current best candidate: **XGBoost** based on the primary metric, RMSE.
+
+**Status: 4.4.3 – COMPLETED ✅**
+
+---
+
+### 4.4.4 Add Evaluation Tests
+
+**Purpose**
+Add tests to verify the correctness of the evaluation workflow and comparison report.
+
+**Implementation**
+
+Created:
+
+tests/test_model_evaluation.py
+
+
+Tests cover:
+- Required evaluation metrics are returned.
+- Comparison report is persisted as valid JSON.
+- Comparison report contains all required metrics.
+
+**Execution**
+
+```bash
+python -m pytest tests/test_model_evaluation.py -v
+```
+
+**Result**
+
+```text
+3 passed
+```
+
+**Status: 4.4.4 – COMPLETED ✅**
+
+---
+
+### 4.4.5 Execute & Verify Model Evaluation
+
+**Purpose**
+Execute the full evaluation workflow end-to-end and verify all outputs.
+
+**Implementation**
+
+Full evaluation workflow executed using:
+```bash
+python -m src.training.model_evaluation
+```
+
+**Verified**
+- Phase 4 data contract validation PASSED
+- 3 candidate models loaded
+- All candidate models evaluated
+- Comparison report persisted successfully
+
+Report verified at:
+
+reports/candidate_model_comparison.json
+
+
+**Final Test Verification**
+
+```bash
+python -m pytest tests/test_model_evaluation.py -v
+```
+
+**Result**
+
+```text
+3 passed
+```
+
+**Status: 4.4.5 – COMPLETED ✅**
+
+---
+
+### 4.4 Status
+
+**PHASE 4.4 – COMPLETED SUCCESSFULLY ✅**
+
+```text
+4.4.1 Evaluation & Comparison Contract     ✅
+4.4.2 Model Evaluation Workflow            ✅
+4.4.3 Model Comparison Report              ✅
+4.4.4 Evaluation Tests                     ✅
+4.4.5 Execute & Verify                     ✅
+```
+
+---
+<a id="phase-45"></a>
+## Phase 4.5 — Hyperparameter Tuning
+
+**Objective**
+Optimize the selected candidate model using automated hyperparameter search and identify the best-performing parameter combination based on validation RMSE.
+
+---
+
+### 4.5.1 — Define Tuning Strategy & Search Space
+
+**Implementation**
+- Tuning framework: Optuna
+- Search algorithm: TPE (Tree-structured Parzen Estimator)
+- Number of trials: 20
+- Optimization metric: RMSE
+- Direction: Minimize
+- Search space defined in `configs/modeling.yaml`
+
+**XGBoost Search Space**
+
+| Hyperparameter | Range |
+|---|---|
+| n_estimators | 100 – 500 |
+| max_depth | 3 – 10 |
+| learning_rate | 0.01 – 0.2 |
+| subsample | 0.6 – 1.0 |
+| colsample_bytree | 0.6 – 1.0 |
+| min_child_weight | 1 – 10 |
+| reg_alpha | 0.0 – 1.0 |
+| reg_lambda | 0.1 – 10.0 |
+
+**Status: 4.5.1 – COMPLETED ✅**
+
+---
+
+### 4.5.2 — Select Tuning Model
+
+Based on Phase 4.4 candidate evaluation, **XGBoost** was selected for hyperparameter tuning.
+
+**Reason**
+- Best candidate RMSE: 3203.3086
+- Best candidate MAE: 451.0966
+- Best candidate R²: 0.033117
+
+**Status: 4.5.2 – COMPLETED ✅**
+
+---
+
+### 4.5.3 — Execute Optuna Tuning
+
+**Implementation**
+
+Implemented `src/training/hyperparameter_tuning.py`.
+
+**Workflow**
+
+```text
+Load configuration
+      ↓
+Load & validate training/validation data
+      ↓
+Create Optuna TPE study
+      ↓
+Run 20 trials
+      ↓
+Train XGBoost for each trial
+      ↓
+Evaluate validation RMSE
+      ↓
+Select best parameters
+```
+
+**Final Result**
+
+Best RMSE: **3203.0254**
+
+Best parameters:
+```text
+n_estimators      = 450
+max_depth         = 3
+learning_rate     = 0.068392
+subsample         = 0.783994
+colsample_bytree  = 0.951392
+min_child_weight  = 8
+reg_alpha         = 0.496764
+reg_lambda        = 6.072246
+```
+
+All 20/20 trials completed successfully.
+
+**Status: 4.5.3 – COMPLETED ✅**
+
+---
+
+### 4.5.4 — MLflow Tracking
+
+**Implementation**
+
+Hyperparameter tuning runs are tracked under:
+
+Experiment:
+
+NYC-Taxi-ETA-Model-Development
+
+
+MLflow captures:
+- Number of trials
+- Optimization metric and direction
+- Tuning model
+- Sampler
+- Best RMSE
+- Best hyperparameters
+- Run ID
+
+**Best Tuning Run**
+
+```text
+Run: hyperparameter_tuning_xgboost
+Run ID: 89f04a9cbfc74f75a7b7ef550bba4ff7
+Best RMSE: 3203.0254
+```
+
+The run and its parameters were verified in the MLflow UI.
+
+**Status: 4.5.4 – COMPLETED ✅**
+
+---
+
+### 4.5.5 — Analyze Best Parameters
+
+Optuna identified the following configuration as the best among the 20 trials:
+
+```text
+n_estimators      = 450
+max_depth         = 3
+learning_rate     = 0.068392
+subsample         = 0.783994
+colsample_bytree  = 0.951392
+min_child_weight  = 8
+reg_alpha         = 0.496764
+reg_lambda        = 6.072246
+```
+
+**Comparison with the original XGBoost candidate**
+
+| Metric | Candidate | Tuned |
+|---|---|---|
+| RMSE | 3203.3086 | 3203.0254 |
+
+The improvement is small, indicating that current model performance is likely more constrained by the available features than by XGBoost hyperparameters.
+
+**Status: 4.5.5 – COMPLETED ✅**
+
+---
+
+### 4.5.6 — Add Tuning Tests
+
+**Implementation**
+
+Created:
+
+tests/test_hyperparameter_tuning.py
+
+
+Tests verify:
+- Tuning configuration is valid.
+- Optuna objective executes correctly.
+- Objective returns a numeric RMSE value.
+
+**Result**
+
+```text
+2 passed
+```
+
+**Status: 4.5.6 – COMPLETED ✅**
+
+---
+
+### 4.5.7 — Execute & Verify Tuning
+
+**Verification**
+
+Final verification confirmed:
+- 20 trials completed
+- Best RMSE: 3203.0254
+- Best parameters identified
+- MLflow run created successfully
+- MLflow parameters and metrics captured
+
+MLflow search also confirmed the tuning run with:
+```text
+n_trials = 20
+optimization_metric = rmse
+best_rmse = 3203.025445
+```
+
+**Status: 4.5.7 – COMPLETED ✅**
+
+---
+
+### Phase 4.5 — Completed ✅
+
+```text
+4.5 Hyperparameter Tuning
+│
+├── 4.5.1 Define Tuning Strategy & Search Space     ✅
+├── 4.5.2 Select Tuning Model                       ✅
+├── 4.5.3 Execute Optuna Tuning                     ✅
+├── 4.5.4 MLflow Tracking                           ✅
+├── 4.5.5 Analyze Best Parameters                   ✅
+├── 4.5.6 Add Tuning Tests                          ✅
+└── 4.5.7 Execute & Verify Tuning                   ✅
+```
+
+**Key outcome:** XGBoost was tuned using Optuna TPE with 20 trials, producing a best validation RMSE of 3203.0254, with the complete tuning run tracked in MLflow.
+
+---
+<a id="phase-46"></a>
+## Phase 4.6 — Final Model Selection & Retraining
+
+**Objective**
+Select the final model configuration, retrain a fresh model using the selected hyperparameters, validate its performance, and verify the final model before artifact handover.
+
+---
+
+### 4.6.1 — Define Final Model Selection Criteria
+
+**Criteria**
+- Primary metric: RMSE — lower is better.
+- Secondary metric: MAE — lower is better.
+- Context metric: R² — higher is better.
+- Model must outperform the baseline.
+- RMSE is the primary selection criterion; MAE is used as a tie-breaker.
+
+**Status: 4.6.1 – COMPLETED ✅**
+
+---
+
+### 4.6.2 — Select Best Candidate + Tuned Configuration
+
+Based on Phase 4.4 candidate evaluation and Phase 4.5 tuning:
+
+- Selected model: **XGBoost**
+- Configuration: Optuna-tuned
+- Selection metric: Validation RMSE
+
+**Selected Parameters**
+
+```text
+n_estimators      = 450
+max_depth         = 3
+learning_rate     = 0.068392
+subsample         = 0.783994
+colsample_bytree  = 0.951392
+min_child_weight  = 8
+reg_alpha         = 0.496764
+reg_lambda        = 6.072246
+```
+
+Best validation RMSE:
+
+3203.0254
+
+
+**Status: 4.6.2 – COMPLETED ✅**
+
+---
+
+### 4.6.3 — Retrain Final Model
+
+**Implementation**
+
+Implemented:
+
+src/training/final_model.py
+
+
+**Workflow**
+
+```text
+Load configuration
+      ↓
+Load & validate Phase 3 data
+      ↓
+Create fresh XGBoost model
+      ↓
+Apply selected Optuna parameters
+      ↓
+Train on training dataset
+```
+
+Training completed successfully on:
+
+Training data: 1,166,833 rows × 5 columns
+
+
+The final model was not persisted at this stage; artifact persistence is handled in Phase 4.7.
+
+**Status: 4.6.3 – COMPLETED ✅**
+
+---
+
+### 4.6.4 — Final Model Validation
+
+**Implementation**
+
+Implemented:
+
+src/training/final_model_validation.py
+
+
+The freshly retrained model was evaluated against the validation dataset.
+
+**Final Validation Metrics**
+
+| Metric | Result |
+|---|---|
+| RMSE | 3203.0254 |
+| MAE | 449.6382 |
+| R² | 0.033288 |
+
+The final RMSE exactly matched the tuned XGBoost RMSE, confirming reproducibility of the selected configuration.
+
+**Status: 4.6.4 – COMPLETED ✅**
+
+---
+
+### 4.6.5 — Add Tests
+
+**Implementation**
+
+Created:
+
+tests/test_final_model.py
+
+
+Tests verify:
+- Selected Optuna parameters are used by the final model.
+- Final model evaluation returns RMSE, MAE and R².
+
+**Result**
+
+```text
+2 passed
+```
+
+**Status: 4.6.5 – COMPLETED ✅**
+
+---
+
+### 4.6.6 — Execute & Verify
+
+**Verification**
+
+Final verification confirmed:
+
+```text
+Phase 3 → Phase 4 data contract       ✅
+Selected configuration                ✅
+Final model training                  ✅
+Validation                            ✅
+RMSE reproducibility                  ✅
+Unit tests                            ✅
+```
+
+**Final Model Result**
+
+| Field | Value |
+|---|---|
+| Model | XGBoost |
+| RMSE | 3203.0254 |
+| MAE | 449.6382 |
+| R² | 0.033288 |
+
+**Status: 4.6.6 – COMPLETED ✅**
+
+---
+
+### Phase 4.6 — Completed ✅
+
+```text
+4.6.1  Define Final Model Selection Criteria        ✅
+4.6.2  Select Best Candidate + Tuned Configuration  ✅
+4.6.3  Retrain Final Model                          ✅
+4.6.4  Final Model Validation                       ✅
+4.6.5  Add Tests                                    ✅
+4.6.6  Execute & Verify                             ✅
+```
+
+---
+<a id="phase-47"></a>
+## Phase 4.7 — Final Model Handover
+
+**Objective**
+Prepare the final trained model and supporting artifacts as a well-defined handover package for the upcoming ML Engineering phase.
+
+The handover package contains the final model, preprocessor, validation metrics, model metadata, and a manifest describing the available artifacts.
+
+---
+
+### 4.7.1 — Define Handover Artifact Contract
+
+**Implementation**
+
+Defined the final artifact contract and standardized the expected handover structure:
+
+```text
+artifacts/final/
+├── model/
+│   └── final_model.joblib
+├── preprocessing/
+│   └── preprocessor.joblib
+├── metrics/
+│   └── final_metrics.json
+├── metadata/
+│   └── model_metadata.json
+└── manifest.json
+```
+
+This establishes a clear contract between Phase 4 (Model Building) and Phase 5 (ML Engineering).
+
+**Status: 4.7.1 – COMPLETED ✅**
+
+---
+
+### 4.7.2 — Persist Final Model
+
+**Implementation**
+
+Updated the final model training workflow to persist the trained XGBoost model.
+
+Artifact:
+
+artifacts/final/model/final_model.joblib
+
+
+The model is trained using the hyperparameters selected by Optuna and persisted for downstream consumption.
+
+**Status: 4.7.2 – COMPLETED ✅**
+
+---
+
+### 4.7.3 — Persist Preprocessor
+
+**Implementation**
+
+Persisted the preprocessing transformer used by the ML pipeline.
+
+Artifact:
+
+artifacts/final/preprocessing/preprocessor.joblib
+
+
+Persisting the preprocessor ensures that future inference can apply the same transformations used during model development.
+
+**Status: 4.7.3 – COMPLETED ✅**
+
+---
+
+### 4.7.4 — Save Final Metrics & Model Metadata
+
+**Implementation**
+
+Removed hard-coded metrics and hyperparameters from the final artifact generation workflow.
+
+The persisted final model is loaded and evaluated against the validation dataset to generate the actual metrics dynamically.
+
+**Final Validation Metrics**
+
+| Metric | Value |
+|---|---|
+| RMSE | 3203.0254 |
+| MAE | 449.6382 |
+| R² | 0.033288 |
+
+Metrics artifact:
+
+artifacts/final/metrics/final_metrics.json
+
+
+Model metadata captures:
+- Model type
+- Model stage
+- Selected hyperparameters
+- Training/validation dataset information
+- Actual validation metrics
+- Paths to final artifacts
+
+Metadata artifact:
+
+artifacts/final/metadata/model_metadata.json
+
+
+The selected hyperparameters are dynamically loaded from:
+
+artifacts/tuning/best_params.json
+
+ensuring that the handover metadata reflects the actual Optuna-selected configuration.
+
+**Status: 4.7.4 – COMPLETED ✅**
+
+---
+
+### 4.7.5 — Create Handover Manifest
+
+**Implementation**
+
+Created a final manifest describing the four core handover artifacts:
+
+artifacts/final/manifest.json
+
+
+The manifest references:
+- model
+- preprocessor
+- metrics
+- metadata
+
+The manifest generation also validates that all required artifacts exist before creating the manifest.
+
+**Status: 4.7.5 – COMPLETED ✅**
+
+---
+
+### 4.7.6 — Add Handover Artifact Tests
+
+**Implementation**
+
+Added automated tests to verify the final handover package.
+
+Tests validate:
+- Required artifacts exist
+- Manifest references the correct artifacts
+- Final metrics contain RMSE, MAE and R²
+- Model metadata contains required information
+- Dataset metadata is populated
+
+**Result**
+
+```text
+4 passed
+```
+
+**Status: 4.7.6 – COMPLETED ✅**
+
+---
+
+### 4.7.7 — Execute & Verify Handover
+
+**Verification**
+
+Executed the complete Phase 4 handover verification.
+
+**Regression Verification**
+
+```text
+40 tests passed
+```
+
+No test failures were observed.
+
+The final artifact package was verified:
+
+```text
+artifacts/final/
+├── manifest.json
+├── model/
+│   └── final_model.joblib
+├── preprocessing/
+│   └── preprocessor.joblib
+├── metrics/
+│   └── final_metrics.json
+└── metadata/
+    └── model_metadata.json
+```
+
+**Additional Consistency Checks**
+
+```text
+PARAMETERS MATCH: True
+METRICS MATCH: True
+MANIFEST ARTIFACTS: 4
+```
+
+Therefore, the final model handover package is complete, internally consistent, and ready for Phase 5 consumption.
+
+**Status: 4.7.7 – COMPLETED ✅**
+
+---
+
+### Phase 4.7 — Outcome
+
+Phase 4.7 successfully produced a complete final model handover package containing:
+
+- ✅ Final XGBoost model
+- ✅ Preprocessor
+- ✅ Actual validation metrics
+- ✅ Model metadata
+- ✅ Handover manifest
+- ✅ Automated artifact tests
+- ✅ Full regression verification
+
+---
+
+### Phase 4 Final Status
+
+**Phase 4 — Model Building: COMPLETE ✅**
+
+The output of Phase 4 is now ready to become the input/contract for Phase 5 — ML Engineering.
+
+
+
+
+

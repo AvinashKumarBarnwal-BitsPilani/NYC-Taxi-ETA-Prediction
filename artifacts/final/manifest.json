@@ -1,0 +1,10 @@
+{
+  "artifact_stage": "final",
+  "model_type": "XGBRegressor",
+  "artifacts": {
+    "model": "artifacts/final/model/final_model.joblib",
+    "preprocessor": "artifacts/final/preprocessing/preprocessor.joblib",
+    "metrics": "artifacts/final/metrics/final_metrics.json",
+    "metadata": "artifacts/final/metadata/model_metadata.json"
+  }
+}

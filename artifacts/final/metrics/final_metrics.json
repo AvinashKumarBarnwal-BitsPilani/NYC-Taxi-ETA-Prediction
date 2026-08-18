@@ -1,0 +1,10 @@
+{
+  "primary_metric": "rmse",
+  "secondary_metric": "mae",
+  "context_metric": "r2",
+  "metrics": {
+    "rmse": 3203.025444794343,
+    "mae": 449.63824462890625,
+    "r2": 0.03328782320022583
+  }
+}

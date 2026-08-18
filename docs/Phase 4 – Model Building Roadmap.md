@@ -78,6 +78,8 @@ Phase 4 – Model Building
 ├── 4.5 Hyperparameter Tuning
 ├── 4.6 Select Final Model
 └── 4.7 Save Model + Evaluation Artifacts
+└── 4.8 Complete Phase 4 architecture 
+
 ```
 
 ### 4.1 – Define Modeling Strategy
@@ -164,6 +166,70 @@ reports/
 ├── final_model_metrics.json
 └── experiment_summary.md
 ```
+
+### 4.8 Complete Phase 4 architecture 
+
+                         ┌───────────────────────┐
+                         │   modeling.yaml       │
+                         │                       │
+                         │ Config + candidates   │
+                         └───────────┬───────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────┐
+                    │      data_contract.py        │
+                    │                              │
+                    │ load config                  │
+                    │ validate config              │
+                    │ load Phase 3 data            │
+                    │ validate Phase 3 → Phase 4   │
+                    └───────────────┬──────────────┘
+                                    │
+                                    ▼
+                    ┌──────────────────────────────┐
+                    │     ML-ready datasets        │
+                    │                              │
+                    │ X_train / y_train            │
+                    │ X_val   / y_val              │
+                    └───────────────┬──────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    │                               │
+                    ▼                               ▼
+           ┌─────────────────┐           ┌────────────────────┐
+           │   baseline.py   │           │ candidate_training │
+           │                 │           │      .py           │
+           │ Phase 4.2       │           │ Phase 4.3          │
+           └────────┬────────┘           └─────────┬──────────┘
+                    │                              │
+                    │                              ▼
+                    │                   ┌────────────────────┐
+                    │                   │  model_factory.py  │
+                    │                   │                    │
+                    │                   │  create_model()    │
+                    │                   └─────────┬──────────┘
+                    │                             │
+                    │                 ┌───────────┼───────────┐
+                    │                 ▼           ▼           ▼
+                    │              Linear       RF         XGBoost
+                    │
+                    └──────────────┬──────────────────────────┐
+                                   │                          │
+                                   ▼                          ▼
+                           Validation Predictions        MLflow
+                                   │                          │
+                                   ▼                          │
+                         calculate_regression_metrics()       │
+                                   │                          │
+                         ┌─────────┼─────────┐                │
+                         ▼         ▼         ▼                ▼
+                        RMSE      MAE        R²       One run / candidate
+                         │         │         │
+                         └─────────┼─────────┘
+                                   │
+                                   ▼
+                         Candidate reports/models
+
 
 ## 5. Phase 4 → Phase 5 Contract
 

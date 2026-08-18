@@ -1,0 +1,31 @@
+{
+  "model_name": "xgboost",
+  "model_type": "XGBRegressor",
+  "model_stage": "final",
+  "selection_metric": "rmse",
+  "selection_direction": "minimize",
+  "selected_hyperparameters": {
+    "n_estimators": 250,
+    "max_depth": 10,
+    "learning_rate": 0.14907884894416698,
+    "subsample": 0.8394633936788146,
+    "colsample_bytree": 0.6624074561769746,
+    "min_child_weight": 2,
+    "reg_alpha": 0.05808361216819946,
+    "reg_lambda": 8.675143843171858
+  },
+  "training_rows": 1166833,
+  "training_features": 5,
+  "validation_rows": 291709,
+  "feature_count": 5,
+  "validation_metrics": {
+    "rmse": 3203.025444794343,
+    "mae": 449.63824462890625,
+    "r2": 0.03328782320022583
+  },
+  "artifacts": {
+    "model": "artifacts/final/model/final_model.joblib",
+    "preprocessor": "artifacts/final/preprocessing/preprocessor.joblib",
+    "metrics": "artifacts/final/metrics/final_metrics.json"
+  }
+}
