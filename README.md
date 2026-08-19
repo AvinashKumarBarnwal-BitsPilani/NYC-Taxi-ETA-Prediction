@@ -31,13 +31,15 @@ The collaboration workflow, branching strategy, and contribution guidelines are 
 - 📄 [Project Initialization Guide](docs/Phase-2-Project_Initialization_GUIDE.md)
 
 ## 📊 Phase 3 – Data Engineering
-🚧 Coming Soon
+
+- 📄 [Data Engineering](docs/Phase-3-Data_Engineering_Roadmap.md)
 
 ## 🤖 Phase 4 – Model Development
-🚧 Coming Soon
+- 📄 [Model Building And Training](docs\Phase-4-Model_Building_And_Training.md)
+- 📄 [Model Building Roadmap](docs/Phase-4-Model_Building_Roadmap.md)
 
 ## 🚀 Phase 5 – Deployment
-🚧 Coming Soon
+- 📄 [Model Deployment And Serving](docs/Phase-5-Model_Deployment_And_Serving.md)
 
 ## 📈 Phase 6 – Monitoring & Retraining
 🚧 Coming Soon
