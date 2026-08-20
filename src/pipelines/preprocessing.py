@@ -45,8 +45,16 @@ X_VAL_PATH = SPLIT_DIR / "X_val.csv"
 # Final preprocessing feature groups
 # ---------------------------------------------------------------------------
 
-NUMERICAL_FEATURES = [
+SCALED_NUMERICAL_FEATURES = [
     "distance_km",
+]
+
+PASSTHROUGH_NUMERICAL_FEATURES = [
+    "passenger_count",
+    "pickup_hour",
+    "pickup_day_of_week",
+    "pickup_month",
+    "is_weekend",
 ]
 
 CATEGORICAL_FEATURES = [
@@ -100,7 +108,12 @@ def create_preprocessor() -> ColumnTransformer:
             (
                 "numerical",
                 StandardScaler(),
-                NUMERICAL_FEATURES,
+                SCALED_NUMERICAL_FEATURES,
+            ),
+            (
+            "passthrough_numerical",
+            "passthrough",
+            PASSTHROUGH_NUMERICAL_FEATURES,
             ),
             (
                 "categorical",
@@ -114,8 +127,10 @@ def create_preprocessor() -> ColumnTransformer:
     )
 
     logger.info(
-        "Preprocessor configured - numerical=%s, categorical=%s",
-        NUMERICAL_FEATURES,
+        "Preprocessor configured - scaled_numerical=%s, "
+        "passthrough_numerical=%s, categorical=%s",
+        SCALED_NUMERICAL_FEATURES,
+        PASSTHROUGH_NUMERICAL_FEATURES,
         CATEGORICAL_FEATURES,
     )
 
@@ -133,7 +148,9 @@ def validate_preprocessing_input(
     """Validate that required preprocessing columns are available."""
 
     required_columns = set(
-        NUMERICAL_FEATURES + CATEGORICAL_FEATURES
+    SCALED_NUMERICAL_FEATURES
+    + PASSTHROUGH_NUMERICAL_FEATURES
+    + CATEGORICAL_FEATURES
     )
 
     missing_columns = sorted(
@@ -159,7 +176,6 @@ def validate_preprocessing_input(
 # ---------------------------------------------------------------------------
 # Fit on TRAIN and transform TRAIN
 # ---------------------------------------------------------------------------
-
 def fit_transform_train(
     X_train: pd.DataFrame,
     preprocessor: ColumnTransformer | None = None,
@@ -172,6 +188,12 @@ def fit_transform_train(
     )
 
     validate_preprocessing_input(X_train, "X_train")
+
+    # Normalize categorical identifier dtype before fitting the encoder.
+    # This ensures stable OneHotEncoder feature names whether the input
+    # originated from an in-memory DataFrame or a CSV reload.
+    X_train = X_train.copy()
+    X_train["vendor_id"] = X_train["vendor_id"].astype("int64")
 
     if preprocessor is None:
         preprocessor = create_preprocessor()
@@ -306,14 +328,22 @@ def verify_preprocessed_datasets(
         X_val_processed.isna().sum().sum()
     )
 
+    # Check infinite values only across numeric columns.
+    numeric_train = X_train_processed.select_dtypes(
+        include=[np.number]
+    )
+    numeric_val = X_val_processed.select_dtypes(
+        include=[np.number]
+    )
+
     train_infinite = int(
         np.isinf(
-            X_train_processed.to_numpy()
+            numeric_train.to_numpy()
         ).sum()
     )
     val_infinite = int(
         np.isinf(
-            X_val_processed.to_numpy()
+            numeric_val.to_numpy()
         ).sum()
     )
 
@@ -463,6 +493,10 @@ def main() -> None:
         save_processed_datasets(
             X_train_processed,
             X_val_processed,
+        )
+        
+        save_preprocessor(
+    _preprocessor,
         )
 
         logger.info(

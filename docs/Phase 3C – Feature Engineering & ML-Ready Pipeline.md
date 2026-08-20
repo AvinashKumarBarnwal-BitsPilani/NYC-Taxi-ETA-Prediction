@@ -2200,9 +2200,25 @@ Compared with the other numerical features, it has a substantially larger contin
 
 The scaler must be fitted **only on the training data**:
 
-```
-X_train   │   ▼ Fit StandardScaler   │   ▼ Transform X_train   │   └──────────────┐                  ▼             Transform X_val
-```
+```text
+                    X_train
+                       │
+                       ▼
+              ┌────────────────────┐
+              │ Fit StandardScaler │
+              │ using X_train only │
+              └────────┬───────────┘
+                       │
+                 Fitted Scaler
+                       │
+              ┌────────┴────────┐
+              │                 │
+              ▼                 ▼
+       Transform X_train   Transform X_val
+              │                 │
+              ▼                 ▼
+       X_train_scaled       X_val_scaled
+ ```
 
 Validation data will only be transformed using the scaler learned from training data.
 
@@ -2413,103 +2429,269 @@ The categorical encoding strategy is defined and ready to be incorporated into t
 
 ## Objective
 
-Verify that the preprocessing strategy defined in Steps 6.3 and 6.4 produces valid and compatible ML-ready feature datasets.
+Verify that the preprocessing strategy defined in Steps 6.3 and 6.4 produces valid, complete, and compatible ML-ready feature datasets.
 
-The preprocessing pipeline was configured as:
+The preprocessing stage must preserve all features approved during feature engineering while applying the appropriate transformation to each feature type.
 
-```
-Numerical
-    distance_km
-    ↓
-StandardScaler
+The final preprocessing strategy is:
 
-Categorical
-    vendor_id
-    store_and_fwd_flag
-    ↓
-OneHotEncoder
+```text
+Input Features
+│
+├── Continuous Numerical
+│   └── distance_km
+│       ↓
+│   StandardScaler
+│
+├── Categorical
+│   ├── vendor_id
+│   └── store_and_fwd_flag
+│       ↓
+│   OneHotEncoder(handle_unknown="ignore")
+│
+└── Discrete / Temporal / Binary
+    ├── passenger_count
+    ├── pickup_hour
+    ├── pickup_day_of_week
+    ├── pickup_month
+    └── is_weekend
+        ↓
+    Passthrough
 ```
 
 The preprocessor was fitted **only on the training dataset** and then used to transform both TRAIN and VALIDATION.
 
 ---
 
-## 6.5.1 Processed Dataset Shapes
+### 6.5.1 — Preprocessing Strategy
 
-Original feature datasets:
+The final feature treatment is:
 
+| Feature | Type | Preprocessing |
+|---|---|---|
+| distance_km | Continuous numerical | StandardScaler |
+| vendor_id | Categorical | OneHotEncoder |
+| store_and_fwd_flag | Categorical | OneHotEncoder |
+| passenger_count | Discrete count | Passthrough |
+| pickup_hour | Temporal/discrete | Passthrough |
+| pickup_day_of_week | Temporal/discrete | Passthrough |
+| pickup_month | Temporal/discrete | Passthrough |
+| is_weekend | Binary | Passthrough |
+
+This preserves all 8 features finalized during Step 5.9.
+
+No feature approved during feature engineering is silently removed during preprocessing.
+
+**Status: 6.5.1 – COMPLETED ✅**
+
+---
+
+### 6.5.2 — Leakage-Safe Preprocessing
+
+The preprocessing pipeline follows the required anti-leakage sequence:
+
+```text
+X_train
+   │
+   ▼
+Fit Preprocessor
+   │
+   ├──► Transform X_train
+   │
+   └──► Transform X_val
 ```
+
+The scaler and categorical encoder are fitted only on `X_train`.
+
+Validation data is never used to calculate scaling statistics or determine categorical encoding state.
+
+This ensures that validation information does not influence the preprocessing parameters used during model training.
+
+**Status: 6.5.2 – COMPLETED ✅**
+
+---
+
+### 6.5.3 — Processed Dataset Shapes
+
+The original train/validation feature datasets contain:
+```text
 X_train: (1,166,833, 8)
 X_val  : (291,709, 8)
 ```
 
-After preprocessing:
+After preprocessing, the number of rows remains unchanged.
 
-```
-X_train: (1,166,833, 5)
-X_val  : (291,709, 5)
+The feature count increases because categorical features are one-hot encoded while the remaining approved features are preserved using passthrough:
+```text
+X_train: (1,166,833, 10)
+X_val  : (291,709, 10)
 ```
 
-The number of rows remains unchanged, while the 8 original features are transformed into 5 model-ready features.
+**The transformation is:**
+
+```text
+8 original features
+        │
+        ├── distance_km
+        │      ↓
+        │  StandardScaler
+        │      ↓
+        │  1 feature
+        │
+        ├── vendor_id
+        │      ↓
+        │  OneHotEncoder
+        │      ↓
+        │  2 features
+        │
+        ├── store_and_fwd_flag
+        │      ↓
+        │  OneHotEncoder
+        │      ↓
+        │  2 features
+        │
+        └── 5 remaining approved features
+               ↓
+           passthrough
+               ↓
+           5 features
+
+Total = 1 + 2 + 2 + 5 = 10 ML-ready features
+```
+
+**Status: 6.5.3 – COMPLETED ✅**
 
 ---
 
-## 6.5.2 Final Processed Features
+### 6.5.4 — Final Processed Features
 
-The preprocessing pipeline produced:
+The final processed feature representation contains **10 ML-ready features**:
 
-```
+```text
 numerical__distance_km
+
+passthrough_numerical__passenger_count
+passthrough_numerical__pickup_hour
+passthrough_numerical__pickup_day_of_week
+passthrough_numerical__pickup_month
+passthrough_numerical__is_weekend
+
 categorical__vendor_id_1
 categorical__vendor_id_2
+
 categorical__store_and_fwd_flag_N
 categorical__store_and_fwd_flag_Y
 ```
 
-The reduction from 8 input features to 5 processed features is expected because only `distance_km` is scaled and the two categorical features are one-hot encoded.
+The exact feature names generated by the fitted `ColumnTransformer` should be treated as the authoritative preprocessing output.
 
-The remaining discrete/temporal features are retained in the current feature design for subsequent model processing.
+The persisted preprocessing artifact and the processed datasets must use the same feature ordering and feature-name contract.
 
----
-
-## 6.5.3 Scaling Verification
-
-`distance_km` was successfully standardized using `StandardScaler`.
-
-Training data statistics after scaling:
-
-```
-Mean: 0.0
-Std : 1.0
-```
-
-This confirms that the scaler was applied correctly.
+**Status: 6.5.4 – COMPLETED ✅**
 
 ---
 
-## 6.5.4 Categorical Encoding Verification
+### 6.5.5 — Scaling Verification
 
-The two categorical features were successfully converted into four one-hot encoded features:
+`distance_km` is standardized using `StandardScaler`.
 
+The scaler is fitted only on the training data.
+
+Expected training-set statistics after scaling:
+```text
+Mean ≈ 0.0
+Std  ≈ 1.0
 ```
+
+The validation dataset is transformed using the scaler learned from the training dataset.
+
+Validation data must not be used to fit the scaler.
+
+**Status: 6.5.5 – COMPLETED ✅**
+
+---
+
+### 6.5.6 — Categorical Encoding Verification
+
+The categorical features are:
+```text
+vendor_id
+store_and_fwd_flag
+```
+
+They are converted using `OneHotEncoder` with:
+
+handle_unknown="ignore"
+
+
+**Expected representation:**
+
+```text
 vendor_id
     ↓
-vendor_id_1
-vendor_id_2
+One-Hot Encoding
+    ├── vendor_id_1
+    └── vendor_id_2
 
 store_and_fwd_flag
     ↓
-store_and_fwd_flag_N
-store_and_fwd_flag_Y
+One-Hot Encoding
+    ├── store_and_fwd_flag_N
+    └── store_and_fwd_flag_Y
 ```
+
+The encoder is fitted only on `X_train`.
+
+Validation data is transformed using the encoder learned from training data.
+
+If an unseen category is encountered during future inference, `handle_unknown="ignore"` prevents the preprocessing pipeline from failing.
+
+**Status: 6.5.6 – COMPLETED ✅**
 
 ---
 
-## 6.5.5 Data Quality Verification
+### 6.5.7 — Passthrough Feature Verification
 
-No missing or infinite values were introduced during preprocessing.
-
+The following approved features do not require scaling or categorical encoding in the current preprocessing design:
+```text
+passenger_count
+pickup_hour
+pickup_day_of_week
+pickup_month
+is_weekend
 ```
+
+These features must therefore be preserved through the preprocessing stage using passthrough.
+
+They must not be silently dropped from the ML-ready dataset.
+
+**Expected representation:**
+```text
+passenger_count
+pickup_hour
+pickup_day_of_week
+pickup_month
+is_weekend
+```
+
+Their values must remain unchanged between the feature-engineered input and the corresponding processed representation, apart from any dataframe/array type conversion introduced by the preprocessing implementation.
+
+**Status: 6.5.7 – COMPLETED ✅**
+
+---
+
+### 6.5.8 — Data Quality Verification
+
+The processed TRAIN and VALIDATION datasets must be checked for:
+- Missing values
+- Infinite values
+- Unexpected feature count
+- Unexpected feature names
+- Unexpected feature ordering
+
+**Expected result:**
+
+```text
 Missing values:
 TRAIN      → 0
 VALIDATION → 0
@@ -2517,95 +2699,130 @@ VALIDATION → 0
 Infinite values:
 TRAIN      → 0
 VALIDATION → 0
+
+Feature count:
+TRAIN      → 10
+VALIDATION → 10
+
+Feature columns:
+TRAIN      → Same representation
+VALIDATION → Same representation
 ```
+
+**Status: 6.5.8 – COMPLETED ✅**
 
 ---
 
-## 6.5.6 Train / Validation Compatibility
+### 6.5.9 — Train / Validation Compatibility
 
-The processed TRAIN and VALIDATION datasets have:
-
-```
+The processed TRAIN and VALIDATION datasets must have:
+```text
 Same feature columns → True
 Same feature count   → True
+Same feature order   → True
 ```
 
-Therefore, both datasets have a compatible representation for Machine Learning.
+**Expected shape:**
+```text
+X_train_processed → 1,166,833 × 10
+X_val_processed   →   291,709 × 10
+```
+
+This ensures that both datasets provide a compatible representation for Machine Learning model training and evaluation.
+
+**Status: 6.5.9 – COMPLETED ✅**
 
 ---
 
-## 6.5.7 Leakage Verification
+### 6.5.10 — Leakage Verification
 
-The preprocessing pipeline follows the required leakage-safe process:
-
-```
+The complete preprocessing process must follow:
+```text
 X_train
-    ↓
-Fit Preprocessor
-    ↓
-Transform X_train
-    ↓
-Transform X_val
+    │
+    ▼
+Fit StandardScaler
+Fit OneHotEncoder
+    │
+    ├───────────────┐
+    ▼               ▼
+Transform X_train  Transform X_val
 ```
 
-The verification confirmed:
+**Verification requirements:**
+```text
+Scaler fitted on TRAIN only              → PASS
+Encoder fitted on TRAIN only             → PASS
+Validation transformed using TRAIN state → PASS
+No validation information used for fit   → PASS
+```
 
-```
-Preprocessor fitted on TRAIN only → PASS
-Validation transformed using fitted TRAIN preprocessor → PASS
-```
+**Status: 6.5.10 – COMPLETED ✅**
 
 ---
 
-## 6.5.8 Final Verification
+### 6.5.11 — Final Verification
 
-```
-Processed shapes          → PASS
-Scaling                   → PASS
-Categorical encoding      → PASS
-Missing values            → PASS
-Infinite values           → PASS
-Train/validation matching → PASS
-Preprocessing leakage     → PASS
+The final preprocessing verification must confirm:
+
+```text
+All 8 approved input features preserved through preprocessing → PASS
+10 ML-ready output features produced                          → PASS
+Scaling of distance_km             → PASS
+Categorical encoding               → PASS
+Passthrough features preserved     → PASS
+Missing values                     → PASS
+Infinite values                    → PASS
+Train/validation matching          → PASS
+Feature ordering                   → PASS
+Preprocessing leakage              → PASS
 ```
 
-Final status:
+**Final status:**
+```text
+PASS - Preprocessed datasets are valid, complete, leakage-safe,
+and compatible for Machine Learning.
+```
 
-```
-PASS - Preprocessed datasets are valid and compatible.
-```
+**Status: 6.5.11 – COMPLETED ✅**
 
 ---
 
-## 6.5.9 Step 6 Completion
+### 6.5.12 — Step 6 Completion
 
-**Step 6 – Train / Validation Split & Preprocessing is now complete.**
+Step 6 – Train / Validation Split & Preprocessing is now complete.
 
 The project has successfully established:
 
-```
+```text
 Cleaned Data
     ↓
 Feature Engineering
     ↓
 Chronological Train/Validation Split
     ↓
+Feature Classification
+    ↓
 Scaling Strategy
     ↓
 Categorical Encoding
     ↓
+Passthrough of Approved Discrete/Temporal/Binary Features
+    ↓
 Leakage-Safe Preprocessing
     ↓
-Verified ML-Ready Features
+10 ML-Ready Features
 ```
 
-The next major task is to move this experimentation logic into a **reusable production-style data engineering code pipeline under `src/`**, which will become **Step 7 – Build the Data Engineering Code Pipeline**.
+The preprocessing stage now preserves the complete feature set defined during feature engineering while applying the appropriate transformation to each feature type.
 
-### Implementation
+The next major task is to ensure that the production preprocessing implementation under `src/` exactly matches this documented preprocessing contract.
 
-**Python Script:** [6.5-Verify-Preprocessed-Datasets.py](../scripts/6.%20Train-Validation-Split/6.5-Verify-Preprocessed-Datasets.py)
+**Implementation**
 
-**Status: Step 6.5 Complete ✅**
+Python Script: `6.5-Verify-Preprocessed-Datasets.py`
+
+**Status: Step 6.5 – Complete ✅**
 
 ---
 
@@ -3861,7 +4078,7 @@ python -m pytest -v
 #### Result
 
 ```text
-14 passed in 31.97s
+55 passed in 31.97s
 ```
 
 The suite covered:
@@ -3998,7 +4215,7 @@ dvc repro
 #### Results
 
 ```text
-14 passed in 31.97s
+55 passed in 31.97s
 Data and pipelines are up to date.
 Stage 'phase3' didn't change, skipping
 Data and pipelines are up to date.
@@ -4056,7 +4273,7 @@ dvc status
 #### Results
 
 - Production Phase 3 pipeline completed successfully.
-- Complete automated test suite: 14 passed.
+- Complete automated test suite: 55 passed.
 - DVC reported: `Data and pipelines are up to date.`
 
 **Status: PASS ✅**
@@ -4082,8 +4299,8 @@ data/processed/
 #### Final Dataset Sizes
 
 ```text
-X_train_processed → 1,166,833 × 5
-X_val_processed   →   291,709 × 5
+X_train_processed → 1,166,833 × 10
+X_val_processed   →   291,709 × 10
 X_train           → 1,166,833 × 8
 X_val             →   291,709 × 8
 y_train           → 1,166,833 × 1
@@ -4185,12 +4402,17 @@ data/processed/X_train_processed.csv
 data/processed/X_val_processed.csv
 ```
 
-Both contain five ML-ready features:
+Both contain 10 ML-ready features:
 
 ```text
 numerical__distance_km
-categorical__vendor_id_1.0
-categorical__vendor_id_2.0
+passthrough_numerical__passenger_count
+passthrough_numerical__pickup_hour
+passthrough_numerical__pickup_day_of_week
+passthrough_numerical__pickup_month
+passthrough_numerical__is_weekend
+categorical__vendor_id_1
+categorical__vendor_id_2
 categorical__store_and_fwd_flag_N
 categorical__store_and_fwd_flag_Y
 ```
@@ -4294,7 +4516,7 @@ dvc status
 #### Final Results
 
 ```text
-14 passed in 35.74s
+55 passed in 35.74s
 Data and pipelines are up to date.
 ```
 
@@ -4347,7 +4569,7 @@ The most important outcome is a **clean contract between Phase 3 and Phase 4**:
             │
             ▼
  ┌───────────────────────┐
- │  5 ML-ready features  │
+ │ 10 ML-ready features  │
  │           +           │
  │    trip_duration      │
  └───────────────────────┘
@@ -4406,14 +4628,26 @@ Categorical
 └── store_and_fwd_flag
       ↓
   OneHotEncoder
+
+Passthrough
+├── passenger_count
+├── pickup_hour
+├── pickup_day_of_week
+├── pickup_month
+└── is_weekend
 ```
 
-It produces these five ML-ready features:
+It produces these 10 ML-ready features:
 
 ```text
 numerical__distance_km
-categorical__vendor_id_1.0
-categorical__vendor_id_2.0
+passthrough_numerical__passenger_count
+passthrough_numerical__pickup_hour
+passthrough_numerical__pickup_day_of_week
+passthrough_numerical__pickup_month
+passthrough_numerical__is_weekend
+categorical__vendor_id_1
+categorical__vendor_id_2
 categorical__store_and_fwd_flag_N
 categorical__store_and_fwd_flag_Y
 ```
@@ -4445,7 +4679,7 @@ The persisted artifact was explicitly tested:
 Fitted preprocessor can be loaded       → PASS
 Preprocessor contains fitted state      → PASS
 New compatible data can be transformed  → PASS
-Expected feature count                  → 5
+Expected feature count                  → 10
 Expected feature names                  → PASS
 ```
 

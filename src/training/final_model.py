@@ -157,8 +157,9 @@ def run_final_model_training() -> xgb.XGBRegressor:
 
     # 4. Train fresh final model
     final_model = train_final_model(
-        X_train=X_train,
-        y_train=y_train,
+    X_train=X_train,
+    y_train=y_train,
+    selected_params=selected_params,
     )
 
     #5. Persist final model final_model.joblib (Phase 4.7.2)

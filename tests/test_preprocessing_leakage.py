@@ -81,5 +81,5 @@ def test_train_and_validation_have_same_processed_shape():
         validation,
     )
 
-    assert X_train.shape == (6, 5)
-    assert X_val.shape == (3, 5)
+    assert X_train.shape == (6, 10)
+    assert X_val.shape == (3, 10)

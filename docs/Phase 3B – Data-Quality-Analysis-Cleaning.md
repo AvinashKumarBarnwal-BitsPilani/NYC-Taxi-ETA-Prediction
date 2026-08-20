@@ -3178,6 +3178,24 @@ The cleaning pipeline will explicitly enforce these data types when loading the 
 
 No information is changed; only the representation of each field is standardized.
 
+
+### Downstream Feature-Encoding Note
+
+The data types defined in Step 4.9 apply to the cleaned dataset
+before feature engineering.
+
+In particular:
+
+- `vendor_id` remains an integer/categorical field.
+- `store_and_fwd_flag` remains a categorical string field.
+- These dataset-level types do not define the names or representation
+  of one-hot encoded features generated later by the preprocessing
+  pipeline.
+
+The exact encoded feature names and ordering are defined and validated
+as part of the feature-engineering/preprocessing contract in the
+subsequent phase.
+
 ### Conclusion
 
 Step 4.9 – Data Types: PASS

@@ -101,5 +101,5 @@ def test_end_to_end_pipeline():
     X_train = pd.read_csv(X_TRAIN_PROCESSED_PATH)
     X_val = pd.read_csv(X_VAL_PROCESSED_PATH)
 
-    assert X_train.shape == (1_166_833, 5)
-    assert X_val.shape == (291_709, 5)
+    assert X_train.shape == (1_166_833, 10)
+    assert X_val.shape == (291_709, 10)

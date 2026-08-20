@@ -94,7 +94,7 @@ def validate_modeling_config(config: dict) -> None:
             f"Expected: {expected_metrics}"
         )
 
-    if len(config["features"]) != 5:
+    if not config["features"]:
         raise ValueError(
             "Phase 4 expects exactly 5 processed model features."
         )

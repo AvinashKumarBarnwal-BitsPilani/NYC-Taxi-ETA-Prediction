@@ -15,7 +15,7 @@
 ## Phase 5.1 — Build Prediction Pipeline
 
 **Objective**
-Create a reusable inference pipeline that consumes the 8 raw input features, applies the persisted Phase 4 preprocessor, loads the final XGBoost model, and returns an ETA prediction.
+Create a reusable inference pipeline that consumes the 8 raw input features, applies the persisted Phase 4 preprocessor to produce the 10 ML-ready model features, loads the final XGBoost model, and returns an ETA prediction.
 
 ---
 
@@ -46,7 +46,7 @@ Raw Input
    ↓
 Preprocessor
    ↓
-5 Model-ready Features
+10 Model-ready Features
    ↓
 Final XGBoost Model
    ↓
@@ -87,7 +87,7 @@ data/split/X_val.csv
       ↓
 preprocessor.joblib
       ↓
-5 Model Features
+10 Model Features
       ↓
 final_model.joblib
       ↓
@@ -251,6 +251,8 @@ Request → DataFrame
 PredictionPipeline
     ↓
 Preprocessor
+    ↓
+10 ML-ready Features
     ↓
 Final XGBoost Model
     ↓
@@ -1294,6 +1296,9 @@ avinashkumarb6/nyc-taxi-eta-prediction
 avinashkumarb6/nyc-taxi-eta-prediction:1.0
 ```
 
+```text
+Note: A new images avinashkumarb6/nyc-taxi-eta-prediction:2.0 has been published. Kindly use it.
+```
 ---
 
 ### Publish Workflow

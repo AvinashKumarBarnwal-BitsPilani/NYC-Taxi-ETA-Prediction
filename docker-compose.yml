@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: nyc-taxi-eta-api:1.0
+    image: nyc-taxi-eta-api:2.0
     container_name: nyc-taxi-eta-api
     ports:
       - "8000:8000"

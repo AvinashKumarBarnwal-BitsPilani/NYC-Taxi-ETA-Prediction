@@ -104,7 +104,7 @@ The overall Phase 4 workflow is:
        preprocessor.transform()        │
                  │                     │
                  ▼                     │
-          5 model features ────────────┘
+          10 model features ───────────┘
                        │
                        ▼
               final_model.predict()
@@ -229,8 +229,8 @@ The baseline reuses the Phase 3 → Phase 4 data contract and does not load raw 
 
 | Input | Path | Dimensions / rows |
 |---|---|---:|
-| Training features | `data/processed/X_train_processed.csv` | 1,166,833 × 5 |
-| Validation features | `data/processed/X_val_processed.csv` | 291,709 × 5 |
+| Training features | `data/processed/X_train_processed.csv` | 1,166,833 × 10 |
+| Validation features | `data/processed/X_val_processed.csv` | 291,709 × 10 |
 | Training target | `data/split/y_train.csv` | 1,166,833 |
 | Validation target | `data/split/y_val.csv` | 291,709 |
 
@@ -288,7 +288,7 @@ These values are the Phase 4 benchmark. Future candidates must demonstrate meani
 
 ### 4.2.9 Interpretation of Baseline Results
 
-The baseline predicts the same training-target mean for every trip, so it does not use any of the five model features. Its R² is approximately zero, consistent with a mean-based constant predictor that provides no explanatory power beyond the reference benchmark.
+The baseline predicts the same training-target mean for every trip, so it does not use any of the 10 model features. Its R² is approximately zero, consistent with a mean-based constant predictor that provides no explanatory power beyond the reference benchmark.
 
 ### 4.2.10 MLflow Experiment Tracking
 
@@ -308,7 +308,7 @@ Logged parameters:
 ```text
 model_type=DummyRegressor    strategy=mean       problem_type=regression
 target=trip_duration         training_rows=1166833
-validation_rows=291709       feature_count=5
+validation_rows=291709       feature_count=10
 ```
 
 Logged metrics match the local report exactly:
@@ -1255,8 +1255,13 @@ The expected model features are already established by the Phase 4.1 data contra
 
 ```
 numerical__distance_km
-categorical__vendor_id_1.0
-categorical__vendor_id_2.0
+passthrough_numerical__passenger_count
+passthrough_numerical__pickup_hour
+passthrough_numerical__pickup_day_of_week
+passthrough_numerical__pickup_month
+passthrough_numerical__is_weekend
+categorical__vendor_id_1
+categorical__vendor_id_2
 categorical__store_and_fwd_flag_N
 categorical__store_and_fwd_flag_Y
 ```
@@ -1623,7 +1628,7 @@ Current best candidate by primary metric (RMSE): **XGBoost**.
 Candidate training completed successfully for all three models using:
 - Training rows: 1,166,833
 - Validation rows: 291,709
-- Features: 5
+- Features: 10
 
 Phase 4 data-contract validation passed.
 
@@ -2272,7 +2277,7 @@ Train on training dataset
 
 Training completed successfully on:
 
-Training data: 1,166,833 rows × 5 columns
+Training data: 1,166,833 rows × 10 columns
 
 
 The final model was not persisted at this stage; artifact persistence is handled in Phase 4.7.

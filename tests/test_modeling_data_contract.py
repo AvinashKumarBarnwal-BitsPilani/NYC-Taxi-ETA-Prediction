@@ -12,8 +12,13 @@ from src.training.data_contract import (
 
 EXPECTED_FEATURES = [
     "numerical__distance_km",
-    "categorical__vendor_id_1.0",
-    "categorical__vendor_id_2.0",
+    "passthrough_numerical__passenger_count",
+    "passthrough_numerical__pickup_hour",
+    "passthrough_numerical__pickup_day_of_week",
+    "passthrough_numerical__pickup_month",
+    "passthrough_numerical__is_weekend",
+    "categorical__vendor_id_1",
+    "categorical__vendor_id_2",
     "categorical__store_and_fwd_flag_N",
     "categorical__store_and_fwd_flag_Y",
 ]
