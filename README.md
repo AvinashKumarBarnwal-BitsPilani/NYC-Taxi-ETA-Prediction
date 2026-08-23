@@ -3,12 +3,18 @@
 This repository documents the complete end-to-end implementation of the **NYC Taxi ETA Prediction** ML Engineering project.
 
 ---
+## 📋 Problem Statement
+
+The original problem statement and project brief is available here:
+
+- 📄 [Problem Statement (ML Engineering Mini Project Brief)](./Problem_Statement/ML_Engineering_MiniProject_Brief.pdf)
+
 
 ## 🚀 Project Execution
 
 The implementation roadmap for the complete project is documented here:
 
-- 📄 [Project Execution Roadmap](Project_Execution_Roadmap.md)
+- 📄 [Project Execution Roadmap](docs/Project_Execution_Roadmap.md)
 
 ---
 
@@ -16,7 +22,7 @@ The implementation roadmap for the complete project is documented here:
 
 The collaboration workflow, branching strategy, and contribution guidelines are documented here:
 
-- 📄 [Contributing Guide](CONTRIBUTING_GUIDE.md)
+- 📄 [Contributing Guide](docs/CONTRIBUTING_GUIDE.md)
 
 ---
 
@@ -42,4 +48,4 @@ The collaboration workflow, branching strategy, and contribution guidelines are 
 - 📄 [Model Deployment And Serving](docs/Phase-5-Model_Deployment_And_Serving.md)
 
 ## 📈 Phase 6 – Monitoring & Retraining
-🚧 Coming Soon
+- 📄 [Monitoring, Alerting And Retraining](docs/Phase-6-Monitoring_Alerting_And_Retraining.md)

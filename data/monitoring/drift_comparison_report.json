@@ -1,0 +1,40 @@
+{
+    "normal": {
+        "rows": 100000,
+        "overall_drift_detected": false,
+        "psi": {
+            "vendor_id": 2.0325321398191683e-06,
+            "passenger_count": 7.36788180671088e-05,
+            "store_and_fwd_flag": 1.0781450709464758e-06,
+            "pickup_hour": 0.0001636537113892916,
+            "pickup_day_of_week": 8.77664899055347e-05,
+            "pickup_month": 2.4249388623307903e-05,
+            "is_weekend": 4.0512108323325474e-06,
+            "distance_km": 3.3212327017503944e-05
+        },
+        "ks_distance_km": {
+            "ks_statistic": 0.0014410264793676686,
+            "p_value": 0.9908079015218266,
+            "drift_detected": false
+        }
+    },
+    "drifted": {
+        "rows": 100000,
+        "overall_drift_detected": true,
+        "psi": {
+            "vendor_id": 2.0325321398191683e-06,
+            "passenger_count": 7.36788180671088e-05,
+            "store_and_fwd_flag": 1.0781450709464758e-06,
+            "pickup_hour": 0.7458110627648324,
+            "pickup_day_of_week": 8.77664899055347e-05,
+            "pickup_month": 2.4249388623307903e-05,
+            "is_weekend": 4.0512108323325474e-06,
+            "distance_km": 0.04154254464255424
+        },
+        "ks_distance_km": {
+            "ks_statistic": 0.08904679973055268,
+            "p_value": 0.0,
+            "drift_detected": true
+        }
+    }
+}

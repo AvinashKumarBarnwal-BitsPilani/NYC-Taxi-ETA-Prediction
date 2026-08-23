@@ -1666,6 +1666,10 @@ Each run records:
 
 **Verification**
 
+To run the project MLflow database  (Run from you project root folder):
+
+`mlflow server --backend-store-uri "sqlite:///./mlflow.db" --host 127.0.0.1 --port 5000 --workers 1`
+
 MLflow UI was verified locally at:
 - `http://127.0.0.1:5000`
 

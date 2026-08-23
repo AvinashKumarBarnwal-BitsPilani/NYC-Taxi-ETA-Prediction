@@ -1,6 +1,6 @@
 # 🚀 Project Execution Roadmap
 
-> **Official Submission Date:** 24-Aug-2026
+> **Official Submission Date:** 31-Aug-2026
 >
 > **Team Target Completion Date:** **23-Aug-2026**
 >
@@ -147,6 +147,7 @@ Perform model tuning using:
 
 - GridSearchCV
 - Random Search
+- Optuna
 
 ---
 
@@ -380,12 +381,12 @@ Retraining
 # 🎯 Final Project Milestones
 
 | Milestone | Target Date | Status |
-|-----------|-------------|--------|
-| Phase 3 – Data Engineering | 13-Aug-2026 | ⏳ Planned |
-| Phase 4 – Model Development | 17-Aug-2026 | ⏳ Planned |
-| Phase 5 – Deployment | 20-Aug-2026 | ⏳ Planned |
-| Phase 6 – Monitoring & Retraining | 23-Aug-2026 | ⏳ Planned |
-| Buffer Day (Testing, Documentation & Demo) | 24-Aug-2026 | ⏳ Planned |
+|---|---|---|
+| Phase 3 – Data Engineering | 13-Aug-2026 | ✅ Completed |
+| Phase 4 – Model Development | 17-Aug-2026 | ✅ Completed |
+| Phase 5 – Deployment | 20-Aug-2026 | ✅ Completed |
+| Phase 6 – Monitoring & Retraining | 23-Aug-2026 | ✅ Completed |
+| Buffer Day (Testing, Documentation & Demo) | 24-Aug-2026 | ⏳ In Progress |
 
 ---
 

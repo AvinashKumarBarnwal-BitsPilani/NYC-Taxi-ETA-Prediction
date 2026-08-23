@@ -1,0 +1,21 @@
+{
+    "thresholds": {
+        "psi": 0.25,
+        "mae_degradation": 0.2
+    },
+    "retraining_candidate": true,
+    "drift_trigger": {
+        "triggered": true,
+        "threshold": 0.25,
+        "features": [
+            "pickup_hour"
+        ]
+    },
+    "performance_trigger": {
+        "triggered": false,
+        "baseline_mae": 492.2197265625,
+        "current_mae": 492.2197265625,
+        "degradation": 0.0,
+        "threshold": 0.2
+    }
+}

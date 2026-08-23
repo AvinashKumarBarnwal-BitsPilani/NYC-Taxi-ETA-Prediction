@@ -35,7 +35,7 @@ Rather than treating this as a traditional Machine Learning assignment, the proj
 ## Architecture Overview
 
 <p align="center">
-    <img src="../images/NYC-Taxi-ETA-Prediction-Architecture.png"
+    <img src="../images/NYC-Taxi-ETA-Prediction-Architecture-Final.png"
          alt="NYC Taxi ETA Prediction Architecture"
          width="100%">
 </p>
@@ -98,9 +98,9 @@ The repository structure promotes:
 | Programming Language | Python |
 | Development Environment | VS Code + Virtual Environment (.venv) |
 | Data Processing | Pandas, NumPy, PyArrow |
-| Data Validation | Pandera |
+| Data Validation | Pydantic |
 | Dataset Versioning | DVC |
-| Version Control | Git |
+| Version Control | GitHub |
 | Experiment Tracking | MLflow |
 | Machine Learning | Scikit-learn, XGBoost, LightGBM |
 | Hyperparameter Tuning | Optuna |

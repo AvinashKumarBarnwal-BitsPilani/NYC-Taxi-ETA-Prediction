@@ -1,0 +1,53 @@
+{
+    "evaluation": {
+        "baseline_source": "D:\\Bits-AI-ML\\3-ML Engineering\\Mini-Project\\NYC-Taxi-ETA-Prediction\\data\\split\\X_train.csv",
+        "current_source": "D:\\Bits-AI-ML\\3-ML Engineering\\Mini-Project\\NYC-Taxi-ETA-Prediction\\data\\monitoring\\current_production_data.csv",
+        "current_rows": 100000
+    },
+    "psi": {
+        "vendor_id": {
+            "psi": 2.0325321398191683e-06,
+            "drift_detected": false
+        },
+        "passenger_count": {
+            "psi": 7.36788180671088e-05,
+            "drift_detected": false
+        },
+        "store_and_fwd_flag": {
+            "psi": 1.0781450709464758e-06,
+            "drift_detected": false
+        },
+        "pickup_hour": {
+            "psi": 0.7458110627648324,
+            "drift_detected": true
+        },
+        "pickup_day_of_week": {
+            "psi": 8.77664899055347e-05,
+            "drift_detected": false
+        },
+        "pickup_month": {
+            "psi": 2.4249388623307903e-05,
+            "drift_detected": false
+        },
+        "is_weekend": {
+            "psi": 4.0512108323325474e-06,
+            "drift_detected": false
+        },
+        "distance_km": {
+            "psi": 0.04154254464255424,
+            "drift_detected": false
+        }
+    },
+    "ks_test": {
+        "distance_km": {
+            "ks_statistic": 0.08904679973055268,
+            "p_value": 0.0,
+            "drift_detected": true
+        }
+    },
+    "thresholds": {
+        "psi": 0.2,
+        "ks_p_value": 0.05
+    },
+    "overall_drift_detected": true
+}

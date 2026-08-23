@@ -1,0 +1,49 @@
+{
+    "thresholds": {
+        "psi_warning": 0.1,
+        "psi_alert": 0.25,
+        "mae_degradation": 0.2
+    },
+    "psi_alerts": {
+        "vendor_id": {
+            "psi": 2.0325321398191683e-06,
+            "severity": "NO_ALERT"
+        },
+        "passenger_count": {
+            "psi": 7.36788180671088e-05,
+            "severity": "NO_ALERT"
+        },
+        "store_and_fwd_flag": {
+            "psi": 1.0781450709464758e-06,
+            "severity": "NO_ALERT"
+        },
+        "pickup_hour": {
+            "psi": 0.7458110627648324,
+            "severity": "ALERT"
+        },
+        "pickup_day_of_week": {
+            "psi": 8.77664899055347e-05,
+            "severity": "NO_ALERT"
+        },
+        "pickup_month": {
+            "psi": 2.4249388623307903e-05,
+            "severity": "NO_ALERT"
+        },
+        "is_weekend": {
+            "psi": 4.0512108323325474e-06,
+            "severity": "NO_ALERT"
+        },
+        "distance_km": {
+            "psi": 0.04154254464255424,
+            "severity": "NO_ALERT"
+        }
+    },
+    "mae": {
+        "baseline_mae": 492.2197265625,
+        "current_mae": 492.2197265625,
+        "degradation": 0.0,
+        "threshold": 0.2,
+        "alert": false
+    },
+    "overall_alert": true
+}

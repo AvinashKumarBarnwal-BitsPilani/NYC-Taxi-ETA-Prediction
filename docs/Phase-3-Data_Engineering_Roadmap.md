@@ -81,274 +81,35 @@
 
   - [Step 7 - Build the Data Engineering Code Pipeline](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-7--build-the-data-engineering-code-pipeline)
     - [7.1 Design Modular Pipeline Architecture](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-71--design-modular-pipeline-architecture)
+    - [7.2 Implement End-to-End Pipeline](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-72--implement-end-to-end-pipeline)
+    - [7.3 Pipeline Testing & Validation](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-73--pipeline-testing--validation)
+        - [7.3a Setup Automated Testing with pytest](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-73a--setup-automated-testing-with-pytest)
+        - [7.3b Test Production Modules](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-73b--test-production-modules)
+        - [7.3c Test Data & Pipeline Invariants](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-73c--test-data--pipeline-invariants)
+        - [7.3d Test Preprocessing & Leakage Controls](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-73d--test-preprocessing--leakage-controls)
+        - [7.3e End-to-End Pipeline Test](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-73e--end-to-end-pipeline-test)
 
+  - [Step 8 - Build the DVC Pipeline](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-8--build-the-dvc-pipeline)
+    - [8.1 DVC Stage Definition](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-81--dvc-stage-definition)
+    - [8.2 Define Dependencies](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-82--define-dependencies)
+    - [8.3 Define Outputs](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-83--define-outputs)
+    - [8.4 Define Parameters](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-84--define-parameters)
+    - [8.5 Execute with dvc repro](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-85--execute-with-dvc-repro)
+    - [8.6 Reproducibility Verification](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-86--reproducibility-verification)
+
+  - [Step 9 – Testing & Reproducibility](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-9--testing--reproducibility)
+    - [9.1 – Run Complete Automated Test Suite](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#91--run-complete-automated-test-suite)
+    - [9.2 – Validate DVC Pipeline Reproduction](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#92--validate-dvc-pipeline-reproduction)
+    - [9.3 – Test Pipeline Failure Scenarios](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#93--test-pipeline-failure-scenarios)
+    - [9.4 – Verify Data & Pipeline Reproducibility](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#94--verify-data--pipeline-reproducibility)
+    - [9.5 – Final Phase 3 Engineering Validation](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#95--final-phase-3-engineering-validation)
+
+  - [Step 10 – Phase 3 Integration & Handover](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-10--phase-3-integration--handover)
+    - [10.1 – Final Phase 3 Integration Check](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#101--final-phase-3-integration-check)
+    - [10.2 – Verify ML-Ready Data Handover](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#102--verify-ml-ready-data-handover)
+    - [10.3 – Final Project Structure & Dependency Check](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#103--final-project-structure--dependency-check)
+    - [10.4 – Documentation & Evidence Review](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#104--documentation--evidence-review)
+    - [10.5 – Phase 4 Training Interface Definition](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#105--phase-4-training-interface-definition)
+    - [10.6 – Phase 3 Completion & Handover](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#106--phase-3-completion--handover)
 ---
 
-# Step 7 – Build the Data Engineering Code Pipeline
-
-**Goal:** Move the data-engineering logic from exploratory notebooks into reusable production-style Python modules.
-
-### Tasks
-
-Create modular code for:
-
-```text
-data loading
-     ↓
-validation
-     ↓
-cleaning
-     ↓
-feature engineering
-     ↓
-preprocessing
-```
-
-Potential structure:
-
-```text
-src/
-├── data/
-│   ├── load.py
-│   ├── validate.py
-│   ├── clean.py
-│   ├── features.py
-│   └── preprocess.py
-```
-
-The exact structure can be adjusted based on the existing project architecture.
-
-### Important
-
-Notebooks should primarily be used for:
-
-```text
-Exploration
-Visualization
-Experimentation
-```
-
-Reusable pipeline logic should live under:
-
-```text
-src/
-```
-
-### Expected Output
-
-A clean, modular Data Engineering implementation that can run without manually executing notebook cells.
-
----
-
-# Step 8 – Build the DVC Pipeline
-
-**Goal:** Make the complete data-processing workflow reproducible.
-
-This is where the work from Phase 2 with DVC becomes useful.
-
-### Desired Flow
-
-```text
-Raw Data
-   ↓
-Data Validation
-   ↓
-Data Cleaning
-   ↓
-Feature Engineering
-   ↓
-Preprocessing
-   ↓
-Processed Dataset
-```
-
-DVC should track the pipeline and its dependencies.
-
-### Tasks
-
-- [ ] Decide what data should be DVC-tracked
-- [ ] Track the appropriate raw dataset with DVC
-- [ ] Define pipeline stages in `dvc.yaml`
-- [ ] Define dependencies
-- [ ] Define outputs
-- [ ] Define parameters/configuration where required
-- [ ] Run the pipeline
-- [ ] Verify generated outputs
-- [ ] Verify DVC status
-- [ ] Verify reproducibility
-
-### Expected Structure
-
-Conceptually:
-
-```text
-dvc.yaml
-
-Stage 1
-Data Validation
-
-Stage 2
-Data Cleaning
-
-Stage 3
-Feature Engineering
-
-Stage 4
-Preprocessing
-```
-
-The exact number of stages can be simplified if appropriate.
-
-### Expected Output
-
-A working:
-
-```text
-dvc.yaml
-```
-
-that allows us to reproduce the processed dataset from the tracked raw data.
-
----
-
-# Step 9 – Testing & Reproducibility
-
-**Goal:** Make sure the pipeline is reliable before handing the data to Phase 4.
-
-### Tasks
-
-Create basic tests for important assumptions.
-
-Examples:
-
-- [ ] Required columns exist
-- [ ] No invalid target values
-- [ ] No impossible timestamps
-- [ ] Expected data types are maintained
-- [ ] Feature engineering produces expected columns
-- [ ] No unexpected nulls remain
-- [ ] Train/validation datasets are generated correctly
-- [ ] Pipeline executes successfully
-- [ ] Pipeline can be reproduced
-
-### Reproducibility Test
-
-The most important test:
-
-```text
-Delete generated processed data
-        ↓
-Run DVC pipeline again
-        ↓
-Processed data generated successfully
-        ↓
-Same pipeline → same result
-```
-
-### Project Location
-
-```text
-tests/
-```
-
-### Expected Output
-
-A validated and reproducible Data Engineering pipeline.
-
----
-
-# Step 10 – Phase 3 Integration & Handover
-
-**Goal:** Prepare everything required by Phase 4 – Model Development.
-
-### Tasks
-
-- [ ] Final quality check of processed dataset
-- [ ] Verify feature list
-- [ ] Verify target column
-- [ ] Verify train/validation datasets
-- [ ] Verify preprocessing pipeline
-- [ ] Verify DVC pipeline
-- [ ] Verify tests
-- [ ] Update documentation
-- [ ] Clean notebooks / temporary files
-- [ ] Commit changes
-- [ ] Push feature branch
-- [ ] Open Pull Request
-- [ ] Explain outputs and usage to Phase 4 contributor(s)
-
-### Phase 4 should receive
-
-```text
-Processed Dataset
-        +
-Feature Definitions
-        +
-Preprocessing Pipeline
-        +
-DVC Pipeline
-        +
-Data Validation Rules
-        +
-Documentation
-```
-
-### Expected Output
-
-A **Model-Ready Data Engineering Layer**.
-
-Phase 4 should be able to start model development without needing to redo Phase 3 work.
-
----
-
-# 🎯 Phase 3 Final Deliverables
-
-By **23 August**, Phase 3 should provide:
-
-- [ ] Dataset understanding / EDA
-- [ ] Data validation rules
-- [ ] Data quality report
-- [ ] Cleaning pipeline
-- [ ] Feature engineering pipeline
-- [ ] Train / validation split strategy
-- [ ] Preprocessing pipeline
-- [ ] Modular Python implementation
-- [ ] DVC-tracked data
-- [ ] Working `dvc.yaml`
-- [ ] Basic automated tests
-- [ ] Reproducible data pipeline
-- [ ] Clean processed dataset
-- [ ] Documentation for Phase 4
-
----
-
-# 🏁 Definition of Done
-
-Phase 3 is considered complete when:
-
-```text
-Raw Dataset
-     │
-     ▼
-Validated
-     │
-     ▼
-Cleaned
-     │
-     ▼
-Feature Engineered
-     │
-     ▼
-Preprocessed
-     │
-     ▼
-DVC Pipeline
-     │
-     ▼
-Reproducible Model-Ready Dataset
-     │
-     ▼
-Phase 4 can start
-```
-
-The extra day is intentionally kept as a buffer for integration, fixes, documentation, and final submission.

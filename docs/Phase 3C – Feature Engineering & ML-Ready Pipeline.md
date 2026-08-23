@@ -55,6 +55,9 @@
   - [10.5 Phase 4 Training Interface Definition](#step-105)
   - [10.6 Phase 3 Completion & Handover](#step-106)
 
+- [Step 11 - Post-Completion Engineering Update – Persisted Preprocessor](./Phase%203C%20%E2%80%93%20Feature%20Engineering%20%26%20ML-Ready%20Pipeline.md#step-11---post-completion-engineering-update--persisted-preprocessor)
+
+
 
 # 📊 Phase 3C – Feature Engineering & ML-Ready Pipeline
 
@@ -4051,6 +4054,8 @@ DVC tracks the dependencies, parameters, and outputs of the complete Phase 3 pip
 
 **Step 8 completes here. Step 9 begins here.**
 
+---
+
 ## Step 9 – Testing & Reproducibility
 
 ### Purpose
@@ -4583,7 +4588,7 @@ When Phase 4 begins, work starts directly with model building rather than return
 
 ---
 
-# 🔧 Post-Completion Engineering Update – Persisted Preprocessor
+## Step 11 - Post-Completion Engineering Update – Persisted Preprocessor
 
 > **Added after Phase 3 completion during Phase 4 interface verification**
 

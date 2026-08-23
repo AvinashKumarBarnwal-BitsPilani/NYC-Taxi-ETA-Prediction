@@ -2,15 +2,15 @@
   "model": "xgboost",
   "metric": "rmse",
   "direction": "minimize",
-  "best_value": 3203.478578046059,
+  "best_value": 3194.635503465145,
   "best_params": {
-    "n_estimators": 250,
-    "max_depth": 10,
-    "learning_rate": 0.14907884894416698,
-    "subsample": 0.8394633936788146,
-    "colsample_bytree": 0.6624074561769746,
-    "min_child_weight": 2,
-    "reg_alpha": 0.05808361216819946,
-    "reg_lambda": 8.675143843171858
+    "n_estimators": 500,
+    "max_depth": 3,
+    "learning_rate": 0.14147866080673013,
+    "subsample": 0.7730982444721965,
+    "colsample_bytree": 0.7846598949780017,
+    "min_child_weight": 4,
+    "reg_alpha": 0.8868639405402455,
+    "reg_lambda": 5.858582311062448
   }
 }

@@ -87,3 +87,27 @@ class PredictionPipeline:
         )
 
         return float(np.asarray(prediction).reshape(-1)[0])
+
+    def predict_batch(
+        self,
+        features: pd.DataFrame,
+    ) -> np.ndarray:
+        """Generate ETA predictions for multiple input records."""
+
+        if self.model is None or self.preprocessor is None:
+            self.load_artifacts()
+
+        if not isinstance(features, pd.DataFrame):
+            raise TypeError(
+                "Prediction input must be a pandas DataFrame."
+            )
+
+        transformed_features = self.preprocessor.transform(
+            features
+        )
+
+        predictions = self.model.predict(
+            transformed_features
+        )
+
+        return np.asarray(predictions)
