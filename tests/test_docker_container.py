@@ -9,8 +9,8 @@ from urllib.request import Request, urlopen
 
 
 BASE_URL = "http://127.0.0.1:8000"
-IMAGE_NAME = "nyc-taxi-eta-api:2.0"
-CONTAINER_NAME = "nyc-taxi-eta-api"
+IMAGE_NAME = "avinashkumarb6/nyc-taxi-eta-prediction:4.0"
+CONTAINER_NAME = "pedantic_dubinsky"
 
 
 VALID_PAYLOAD = {
