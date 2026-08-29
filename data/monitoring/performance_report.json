@@ -1,11 +1,11 @@
 {
     "dataset": {
-        "rows": 291709,
+        "rows": 379221,
         "source": "D:\\Bits-AI-ML\\3-ML Engineering\\Mini-Project\\NYC-Taxi-ETA-Prediction\\data\\monitoring\\performance_dataset.csv"
     },
     "metrics": {
-        "mae": 492.2197265625,
-        "rmse": 3223.649019356791,
-        "r2": 0.020798861980438232
+        "mae": 427.78753662109375,
+        "rmse": 3170.55436793,
+        "r2": 0.03980410099029541
     }
 }
