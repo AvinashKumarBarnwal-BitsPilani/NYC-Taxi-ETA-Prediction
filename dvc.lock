@@ -17,12 +17,12 @@ stages:
       size: 200589097
     - path: src
       hash: md5
-      md5: 66418de293422faa9c25e0baf1182c07.dir
-      size: 356744
+      md5: e3d5fd58f4c9ee4c1df4ca87c54a8a89.dir
+      size: 357283
       nfiles: 64
     params:
       params.yaml:
-        split.validation_size: 0.2
+        split.validation_size: 0.26
     outs:
     - path: data/interim
       hash: md5
@@ -31,11 +31,11 @@ stages:
       nfiles: 2
     - path: data/processed
       hash: md5
-      md5: 77713ac1f26053c5f67ad64f786f9fb9.dir
-      size: 69507841
+      md5: c005cc17b41950a5d32c5680b937ff28.dir
+      size: 69506151
       nfiles: 3
     - path: data/split
       hash: md5
-      md5: 069158904d54cca547820c407f080728.dir
+      md5: 464c9129513ea0cd35487262beb666d6.dir
       size: 57649873
       nfiles: 4

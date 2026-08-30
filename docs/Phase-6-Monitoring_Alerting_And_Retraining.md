@@ -28,6 +28,13 @@ The phase focuses on:
 The implementation is intentionally lightweight and focused on demonstrating the end-to-end monitoring and retraining workflow.
 
 ---
+## Phase 6 - End to End Flow
+
+<p align="center">
+  <img src="../images/Phase-6-Flow-End-To-End.png" alt="Phase-6-Flow-End-To-End" width="50%">
+</p>
+
+---
 
 <a id="phase-61"></a>
 ## Phase 6.1 — Prediction Logging
@@ -1174,7 +1181,7 @@ data/monitoring/retraining_trigger_report.json
 
 ---
 
-
+<a id="phase-67"></a>
 ## Phase 6.7 — Retraining Pipeline
 
 **Objective**

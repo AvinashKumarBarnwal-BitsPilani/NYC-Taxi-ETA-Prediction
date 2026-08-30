@@ -14,8 +14,8 @@
     "performance_trigger": {
         "triggered": false,
         "baseline_mae": 492.2197265625,
-        "current_mae": 492.2197265625,
-        "degradation": 0.0,
+        "current_mae": 427.78753662109375,
+        "degradation": -0.13090127531332274,
         "threshold": 0.2
     }
 }

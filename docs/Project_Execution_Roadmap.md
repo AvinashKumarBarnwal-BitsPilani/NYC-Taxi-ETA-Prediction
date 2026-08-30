@@ -196,7 +196,7 @@ Store the selected model for deployment.
 
 ---
 
-# 🚀 Phase 5 – Deployment (M4)
+# 🚀 Phase 5 – Model Deployment (M4)
 
 ### 🎯 Objective
 
